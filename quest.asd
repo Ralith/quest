@@ -13,4 +13,5 @@
              (:module "pages"
                       :serial t
                       :components
-                      ((:file "index")))))))
+                      ((:file "index")
+                       (:file "quest")))))))

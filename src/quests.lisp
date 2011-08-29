@@ -23,11 +23,22 @@
      quest)
     :single)
 
+(defprepared-with-names chapters (quest)
+    ((:order-by (:select :* :from '#:chapters :where (:= '#:quest :$1))
+                '#:ordinal)
+     quest))
+
 (defprepared-with-names latest-chapter (quest)
     ((:limit (:order-by (:select :* :from '#:chapters :where (:= '#:quest :$1))
                         (:desc '#:ordinal))
              1)
      quest)
+    :row)
+
+(defprepared-with-names id->quest (id)
+    ((:limit (:select :* :from '#:quests :where (:= '#:id :$1))
+             1)
+     id)
     :row)
 
 (defun append-chapter (quest address post-body &key title pen-name)
