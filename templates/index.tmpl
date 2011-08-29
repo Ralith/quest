@@ -6,22 +6,18 @@
     <title>Quests</title>
   </head>
   <body>
-  <div id="quests">
     <!-- TMPL_LOOP quests -->
     <hr />
-    <h3><!-- TMPL_VAR quest-title --></h3>
-    <div id="chapter">
-      <h4><!-- TMPL_VAR chapter-title --></h4>
-      <!-- TMPL_LOOP posts -->
-      <!-- TMPL_IF post-title -->
-      <h5><!-- TMPL_VAR post-title --></h5>
-      <!-- /TMPL_IF -->
-      <small><!-- TMPL_VAR author --></small>
-      <small><!-- TMPL_VAR date --></small>
-      <p><!-- TMPL_VAR body --></p>
-      <!-- /TMPL_LOOP -->
-    </div>
+    <h3><a href="<!-- TMPL_VAR quest-url  -->"><!-- TMPL_VAR quest-title --></a></h3>
+    <h4><!-- TMPL_VAR chapter-title --></h4>
+    <!-- TMPL_LOOP posts -->
+    <!-- TMPL_IF post-title -->
+    <h5><!-- TMPL_VAR post-title --></h5>
+    <!-- /TMPL_IF -->
+    <small><!-- TMPL_VAR author --></small>
+    <small><!-- TMPL_VAR date --></small>
+    <p><!-- TMPL_VAR body --></p>
     <!-- /TMPL_LOOP -->
-  </div>
-  </body> 
+    <!-- /TMPL_LOOP -->
+  </body>
 </html>
