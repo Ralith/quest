@@ -11,16 +11,19 @@
       (setf n (parse-integer n))
       (setf n 10))
   (let ((values (loop for (id title author chapter-count quest-date) in (frontpage-quests n)
-                      for (chapter-id chapter-title quest ordinal post-count chapter-date) = (latest-chapter id)
+                      for (chapter-id chapter-title quest ordinal post-count chapter-date) = (chapter-details (latest-chapter-id id))
                       collecting
-                      (list :quest-title title
-                            :chapter-title chapter-title
-                            :posts
-                            (loop for (pid pord pch pau padd psugg ptit pnam pbod pdat ped) in (subst nil :null (posts-of chapter-id))
-                                  collecting (list :post-title ptit
-                                                   :author pau
-                                                   :date pdat
-                                                   :body pbod))))))
+                      `(:quest-title ,title
+                        :quest-id ,(write-to-string id :base 36)
+                        :chapter-title ,chapter-title
+                        :posts
+                        ,(loop with updates = (updates-of chapter-id)
+                               for (pid pau padd ptit pnam pbod pdat ped)
+                               in (subst nil :null (mapcar #'post-details updates))
+                               collecting `(:post-title ,ptit
+                                            :author ,pau
+                                            :date ,pdat
+                                            :body ,pbod))))))
     (with-output-to-string (s)
       (fill-and-print-template (find-template "index") (list :quests values)
                                :stream s))))
