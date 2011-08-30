@@ -6,11 +6,8 @@
 (defprepared frontpage-quests
     (:limit (:select :* :from '#:quests) :$1))
 
-(define-easy-handler (frontpage :uri "/") (n)
-  (if n
-      (setf n (parse-integer n))
-      (setf n 10))
-  (let ((values (loop for (id title author chapter-count quest-date) in (frontpage-quests n)
+(defroute frontpage "/"
+  (let ((values (loop for (id title author chapter-count quest-date) in (frontpage-quests 10)
                       for (chapter-id chapter-title quest ordinal post-count chapter-date) = (chapter-details (latest-chapter-id id))
                       collecting
                       `(:quest-title ,title
