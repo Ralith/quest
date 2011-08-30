@@ -24,6 +24,17 @@ CREATE TABLE chapters (
   UNIQUE (ordinal, quest)
 );
 
+CREATE TABLE posts (
+  id        serial     PRIMARY KEY,
+  author    integer    REFERENCES users,
+  address   inet       NOT NULL,
+  title     text,
+  pen_name  text,
+  body      text       NOT NULL,
+  created   timestamp with time zone  NOT NULL DEFAULT now(),
+  edited    timestamp with time zone
+);
+
 CREATE TABLE updates (
   post integer PRIMARY KEY REFERENCES posts,
   chapter integer NOT NULL REFERENCES chapters,
@@ -37,17 +48,6 @@ CREATE TABLE suggestions (
   update integer NOT NULL REFERENCES updates,
   ordinal integer NOT NULL,
   UNIQUE (ordinal, update)
-);
-
-CREATE TABLE posts (
-  id        serial     PRIMARY KEY,
-  author    integer    REFERENCES users,
-  address   inet       NOT NULL,
-  title     text,
-  pen_name  text,
-  body      text       NOT NULL,
-  created   timestamp with time zone  NOT NULL DEFAULT now(),
-  edited    timestamp with time zone
 );
 
 CREATE FUNCTION get_chapter_ordinal(quest integer) RETURNS integer AS $$
