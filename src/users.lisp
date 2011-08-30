@@ -4,42 +4,37 @@
 
 (defconstant +salt-size+ 32)
 
-;;; Not authoritative for schema due to lack of constraint support
-;; (defclass users ()
-;;   ((id :col-type :serial
-;;        :reader id)
-;;    (name :col-type :string :initarg :name
-;;          :reader name)
-;;    (email :col-type :string :initarg :email
-;;          :reader email)
-;;    (password :col-type :string :initarg :password
-;;              :reader password)
-;;    (created :col-type :timestamp-with-timezone
-;;             :reader created))
-;;   (:metaclass dao-class)
-;;   (:keys id))
-
-(defprepared %register
-    (:insert-into '#:users :set '#:name :$1 '#:email :$2 '#:password :$3 :returning '#:id)
+(defprepared-with-names %register (name email password)
+    ((:insert-into '#:users :set '#:name :$1 '#:email :$2 '#:password :$3 :returning '#:id)
+     name email password)
     :single)
 
-(defprepared id-of-user
-    (:select '#:id :from '#:users :where (:= '#:name :$1))
+(defprepared-with-names username->id (name)
+    ((:select '#:id :from '#:users :where (:= '#:name :$1))
+     name)
     :single)
 
-(defprepared password-of
-    (:select '#:password :from '#:users :where (:= '#:id :$1))
+(defprepared-with-names password-of (user-id)
+    ((:select '#:password :from '#:users :where (:= '#:id :$1))
+     user-id)
     :single)
 
-(defprepared (setf password-of)
-    (:update '#:users :set '#:password :$1 :where (:= '#:id :$2))
+(defprepared-with-names (setf password-of) (password user-id)
+    ((:update '#:users :set '#:password :$1 :where (:= '#:id :$2))
+     password user-id)
     :none)
+
+(defprepared-with-names user-details (id)
+    ((:limit (:select :* :from '#:users :where (:= '#:id :$1))
+             1)
+     id)
+    :row)
 
 (defun register (name email password)
   (nth-value 0 (%register name email (bcrypt:hash password))))
 
 (defun login (name password &aux)
-  (let* ((user-id (id-of-user name))
+  (let* ((user-id (username->id name))
          (hash (password-of user-id)))
     (if (and hash (bcrypt:password= password hash))
         (progn ;; (start-session)

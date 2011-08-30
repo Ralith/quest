@@ -37,12 +37,6 @@
      id)
     :row)
 
-(defprepared-with-names user-details (id)
-    ((:limit (:select :* :from '#:users :where (:= '#:id :$1))
-             1)
-     id)
-    :row)
-
 (defprepared-with-names chapter-details (id)
     ((:limit (:select :* :from '#:chapters :where (:= '#:id :$1))
              1)

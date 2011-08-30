@@ -1,19 +1,5 @@
 (in-package #:quest)
 
-(defclass post ()
-  ((author :initarg :author
-           :initform (error "Posts must have an author!")
-           :reader author)
-   (pen-name :initarg :pen-name
-             :accessor pen-name
-             :type string)
-   (title :initarg :title
-          :accessor title
-          :type string)
-   (body :initarg :body
-         :accessor body
-         :type string)))
-
 (defprepared-with-names create-post (address body &key (author-id :null) (title :null) (pen-name :null))
     ((:insert-into :posts :set :author :$1 :address :$2 :title :$3 :pen_name :$4 :body :$5
                    :returning :id)
