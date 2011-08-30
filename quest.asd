@@ -6,6 +6,7 @@
             :serial t
             :components
             ((:file "package")
+             (:file "routes")
              (:file "templates")
              (:file "users")
              (:file "posts")
