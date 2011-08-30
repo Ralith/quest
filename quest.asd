@@ -1,6 +1,6 @@
 (asdf:defsystem quest
   :serial t
-  :depends-on (#:hunchentoot #:html-template #:parenscript #:postmodern #:alexandria #:anaphora #:routes #:monkeylib-bcrypt)
+  :depends-on (#:hunchentoot #:html-template #:parenscript #:postmodern #:alexandria #:anaphora #:routes #:monkeylib-bcrypt #:sb-cga #:zpng)
   :components
   ((:module "src"
             :serial t
