@@ -12,7 +12,7 @@
     :single)
 
 (defprepared-with-names append-suggestion (post-id update-id)
-    ("(INSERT INTO suggestions (post, update, ordinal) VALUES ($1, $2, get_suggestion_ordinal($2)) RETURNING post"
+    ("INSERT INTO suggestions (post, update, ordinal) VALUES ($1, $2, get_suggestion_ordinal($2)) RETURNING post"
      post-id update-id)
     :single)
 
