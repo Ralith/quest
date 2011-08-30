@@ -3,6 +3,8 @@
   (:export #:render #:render-to-stream #:generate))
 (in-package #:random-art)
 
+(declaim (optimize (speed 3)))
+
 (defvar *operators* ())
 
 (defun operator (cons)
@@ -20,16 +22,12 @@
 (defmacro defop (name children coords locals &body body)
   (let ((constr-name (alexandria:symbolicate "MAKE-" name)))
     `(progn
-       (declaim (ftype (sb-cga::sfunction ,(loop repeat (length children)
-                                                 collect 'function)
-                                          (sb-cga::sfunction (single-float single-float) vec))))
        (defun ,constr-name ,children
          (let ,locals
-           (the (sb-cga::sfunction (single-float single-float) vec)
-                (lambda ,coords
-                  (declare (type single-float ,@coords))
-                  ,@(butlast body 1)
-                  (the vec ,(car (last body)))))))
+           (lambda ,coords
+             (declare (type single-float ,@coords))
+             ,@(butlast body 1)
+             (the vec ,(car (last body))))))
        (pushnew (cons ',constr-name ,(length children)) *operators* :key #'car))))
 
 (defmacro with-vec ((v x y z) &body body)
@@ -53,6 +51,7 @@
   c)
 
 (defop sum (a b) (x y) ()
+
   (vec/ (vec+ (funcall a x y) (funcall b x y))
      2.0))
 
@@ -100,8 +99,9 @@
                 (- 1.0 weight)))))
 
 (defun ensure-nonzero (x)
+  (declare (type single-float x))
   (if (= 0.0 x)
-      0.42
+      0.001
       x))
 
 (defop mod (a b) (x y) ()
@@ -126,10 +126,12 @@
                                 collect (generate (1- depth))))))))
 
 (defun vec->pixel (vec)
-  (make-array 3 :element-type 'fixnum :initial-contents
-              (list (max 0 (min 255 (truncate (* 128 (+ 1 (aref vec 0))))))
-                    (max 0 (min 255 (truncate (* 128 (+ 1 (aref vec 1))))))
-                    (max 0 (min 255 (truncate (* 128 (+ 1 (aref vec 2)))))))))
+  (declare (type vec vec))
+  (with-vec (vec r g b)
+   (make-array 3 :element-type 'fixnum :initial-contents
+               (list (min 255 (truncate (* 128 (+ 1 (min 1.0 (max -1.0 r))))))
+                     (min 255 (truncate (* 128 (+ 1 (min 1.0 (max -1.0 g))))))
+                     (min 255 (truncate (* 128 (+ 1 (min 1.0 (max -1.0 b))))))))))
 
 (defun do-render (function pixel-writer width height)
   (format t "|----------------------------------------|~%|")
@@ -155,7 +157,7 @@
                              :height height))
          (image (data-array png)))
     (do-render function
-      (lambda (x y pixel)
+      (lambda (y x pixel)
         (with-vec (pixel r g b)
           (setf (aref image y x 0) r
                 (aref image y x 1) g

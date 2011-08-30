@@ -11,6 +11,7 @@
              (:file "users")
              (:file "posts")
              (:file "quests")
+             (:file "random-art")
              (:module "pages"
                       :serial t
                       :components
