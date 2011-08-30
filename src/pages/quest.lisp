@@ -12,7 +12,7 @@
                         (loop for (pid pau padd ptit pnam pbod pdat ped)
                               in (subst nil :null (mapcar #'post-details (updates-of chapter-id)))
                               collecting (list :post-title ptit
-                                               :author pau
+                                               :author (userid->name pau)
                                                :date pdat
                                                :body pbod))))))
       (destructuring-bind (id title author chapter-count created) (quest-details id)
@@ -20,6 +20,6 @@
        (with-output-to-string (s)
          (fill-and-print-template (find-template "quest") (list
                                                            :quest-title title
-                                                           :author author
+                                                           :author (userid->name author)
                                                            :chapters chapters)
                                   :stream s))))))

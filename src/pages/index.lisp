@@ -21,7 +21,7 @@
                                for (pid pau padd ptit pnam pbod pdat ped)
                                in (subst nil :null (mapcar #'post-details updates))
                                collecting `(:post-title ,ptit
-                                            :author ,pau
+                                            :author ,(userid->name pau)
                                             :date ,pdat
                                             :body ,pbod))))))
     (with-output-to-string (s)

@@ -14,6 +14,11 @@
      name)
     :single)
 
+(defprepared-with-names userid->name (user-id)
+    ((:select :name :from :users :where (:= :id :$1))
+     user-id)
+    :single)
+
 (defprepared-with-names password-of (user-id)
     ((:select '#:password :from '#:users :where (:= '#:id :$1))
      user-id)
