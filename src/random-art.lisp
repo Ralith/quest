@@ -83,7 +83,7 @@
 (defop variable-y (x y) () () ()
   y y y)
 
-(defop color-matrix (x y)
+(defop matrix (x y)
     ((a (- 1.0 (rand 2.0))) (b (- 1.0 (rand 2.0)))
      (c (- 1.0 (rand 2.0))) (d (- 1.0 (rand 2.0)))
      (e (- 1.0 (rand 2.0))) (f (- 1.0 (rand 2.0))))
@@ -125,13 +125,33 @@
   (- 1.0 (* 2.0 (abs g)))
   (- 1.0 (* 2.0 (abs b))))
 
-(defop sin (x y) 
+(defop flat-sin (x y)
     ((phase (* (float pi 0.0) (rand 1.0)))
      (freq (+ 1.0 (rand 5.0))))
     (((x y) (r g b))) ()
   (sin (+ phase (* freq r)))
   (sin (+ phase (* freq g)))
   (sin (+ phase (* freq b))))
+
+(defop bias-sin (x y)
+    ((rphase (* (float pi 0.0) (rand 1.0)))
+     (rfreq (+ 1.0 (rand 5.0)))
+     (gphase (* (float pi 0.0) (rand 1.0)))
+     (gfreq (+ 1.0 (rand 5.0)))
+     (bphase (* (float pi 0.0) (rand 1.0)))
+     (bfreq (+ 1.0 (rand 5.0))))
+    (((x y) (r g b))) ()
+  (sin (+ rphase (* rfreq r)))
+  (sin (+ gphase (* gfreq g)))
+  (sin (+ bphase (* bfreq b))))
+
+(defop tan (x y)
+    ((phase (* (float pi 0.0) (rand 1.0)))
+     (freq (+ 1.0 (rand 5.0))))
+    (((x y) (r g b))) ()
+  (tan (+ phase (* freq r)))
+  (tan (+ phase (* freq g)))
+  (tan (+ phase (* freq b))))
 
 (defop level (x y)
     ((threshold (- 1.0 (rand 2.0))))
@@ -168,6 +188,10 @@
   (fmod ar br)
   (fmod ag bg)
   (fmod ab bb))
+
+(defop complex-square (x y) ()
+    ((((- (* x x) (* y y)) (* 2 x y)) (r g b))) ()
+  r g b)
 
 (defun save-tree (tree)
   (etypecase tree
