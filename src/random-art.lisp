@@ -113,6 +113,16 @@
   (fmod ag bg)
   (fmod ab bb))
 
+(defun save-tree (tree)
+  (etypecase tree
+    (operator (operator-name tree))
+    (list (mapcar #'save-tree tree))))
+
+(defun load-tree (tree)
+  (etypecase tree
+    (symbol (find tree *operators* :key #'operator-name))
+    (list (mapcar #'load-tree tree))))
+
 (defun generate-tree (&optional (depth 5))
   (let ((operators0 (remove-if (alexandria:curry #'/= 0)
                                *operators*
