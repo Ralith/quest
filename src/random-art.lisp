@@ -151,13 +151,6 @@
   (+ (* ab weight)
      (* bb compl)))
 
-(declaim (inline ensure-nonzero))
-(defun ensure-nonzero (x)
-  (declare (type single-float x))
-  (if (= 0.0 x)
-      single-float-epsilon
-      x))
-
 (declaim (inline fmod))
 (defun fmod (x y)
   "Return gibberish when the quotient exceeds single-float precision."
