@@ -171,22 +171,40 @@
 (declaim (inline coord->color))
 
 
-(defun do-render (function pixel-writer width height)
+(defun mapping (width height &aux (ratio (/ (float width 0.0) (float height 0.0))))
+  (let ((xmin -1.0) (xmax 1.0) (ymin -1.0) (ymax 1.0) step)
+    (if (> width height)
+        (let ((recipio (/ 1.0 ratio)))
+          (setf step (/ 2.0 width)
+                ymin (- recipio)
+                ymax recipio))
+        (setf step (/ 2.0 height)
+              xmin (- ratio)
+              xmax ratio))
+    (format t "X from ~A to ~A (~A steps)~%"
+            xmin xmax (/ (- xmax xmin) step))
+    (format t "Y from ~A to ~A (~A steps)~%"
+            ymin ymax (/ (- ymax ymin) step))))
+
+(defun do-render (function pixel-writer width height &aux (ratio (float (/ width height) 0.0)))
   (declare (type fixnum width height))
-  (format t "|----------------------------------------|~%|")
-  (loop for x from -1.0 to 1.0 by (/ 2.0 width)
-        for i below width
-        with progress = 0.0
-        do (loop for y from -1.0 to 1.0 by (/ 2.0 height)
-                 for j below height
-                 do (multiple-value-bind (r g b)
-                        (funcall function x y)
-                      (funcall pixel-writer i j
-                               (coord->color r) (coord->color g) (coord->color b))))
-           (when (> (/ i width) progress)
-             (format t "=")
-             (incf progress (/ 1.0 40.0))))
-  (format t "|~%"))
+  (let ((xmin -1.0) (xmax 1.0) (ymin -1.0) (ymax 1.0) step)
+    (if (> width height)
+        (let ((recipio (/ 1.0 ratio)))
+          (setf step (/ 2.0 width)
+                ymin (- recipio)
+                ymax recipio))
+        (setf step (/ 2.0 height)
+              xmin (- ratio)
+              xmax ratio))
+    (loop for y from ymin to ymax by step
+          for j below height
+          do (loop for x from xmin to xmax by step
+                   for i below width
+                   do (multiple-value-bind (r g b)
+                          (funcall function x y)
+                        (funcall pixel-writer i j
+                                 (coord->color r) (coord->color g) (coord->color b)))))))
 
 (defun render (function &optional (width 512) (height 512))
   (let* ((png (make-instance 'png
@@ -195,7 +213,7 @@
                              :height height))
          (image (data-array png)))
     (do-render function
-      (lambda (y x r g b)
+      (lambda (x y r g b)
         (setf (aref image y x 0) r
               (aref image y x 1) g
               (aref image y x 2) b))
