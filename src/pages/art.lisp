@@ -5,4 +5,4 @@
 ;;; TODO: seed
 (defroute art "/art"
   (setf (content-type*) "image/png")
-  (random-art:render-to-stream (random-art:generate 4) (send-headers)))
+  (random-art:render-to-stream (random-art:generate 5) (send-headers)))

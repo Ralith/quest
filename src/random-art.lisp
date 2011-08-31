@@ -3,7 +3,7 @@
   (:export #:render #:render-to-stream #:generate))
 (in-package #:random-art)
 
-(defvar *operators* ())
+(defparameter *operators* ())
 
 (declaim (optimize (speed 3)))
 
@@ -87,17 +87,23 @@
   (+ (* ab weight)
      (* bb compl)))
 
+(declaim (inline ensure-nonzero))
 (defun ensure-nonzero (x)
   (declare (type single-float x))
   (if (= 0.0 x)
       single-float-epsilon
       x))
-(declaim (inline ensure-nonzero))
 
 (defop mod (x y) (((x y) (ar ag ab)) ((x y) (br bg bb))) () ()
-  (mod ar (ensure-nonzero br))
-  (mod ag (ensure-nonzero bg))
-  (mod ab (ensure-nonzero bb)))
+  (if (= 0 br)
+      ar
+      (- ar (* (ftruncate ar br) br)))
+  (if (= 0 bg)
+      ag
+      (- ag (* (ftruncate ag bg) bg)))
+  (if (= 0 bb)
+      ab
+      (- ab (* (ftruncate ab bb) bb))))
 
 (defun generate-tree (&optional (depth 10))
   (let ((operators0 (remove-if (alexandria:curry #'/= 0)
@@ -144,7 +150,8 @@
 (defun code->func (code)
   (compile nil
            (eval `(lambda (x y)
-                    (declare (optimize (speed 3)))
+                    (declare (optimize (speed 3))
+                             (type single-float x y))
                     ,code))))
 
 (defun generate (&optional (depth 10))
