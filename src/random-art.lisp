@@ -257,7 +257,7 @@
                            (type single-float x y))
                   ,code)))
 
-(defun generate (&key (min-depth 2) (max-depth 6) (seed (get-internal-real-time)))
+(defun generate (&key (min-depth 4) (max-depth 6) (seed (get-internal-real-time)))
   (cffi:with-foreign-object (*randbuf* :char 24)
     (seed48 seed)
     (code->func (tree->code (generate-tree min-depth max-depth)))))
