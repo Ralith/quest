@@ -170,21 +170,6 @@
 (declaim (inline coord->color))
 
 
-(defun mapping (width height &aux (ratio (/ (float width 0.0) (float height 0.0))))
-  (let ((xmin -1.0) (xmax 1.0) (ymin -1.0) (ymax 1.0) step)
-    (if (> width height)
-        (let ((recipio (/ 1.0 ratio)))
-          (setf step (/ 2.0 width)
-                ymin (- recipio)
-                ymax recipio))
-        (setf step (/ 2.0 height)
-              xmin (- ratio)
-              xmax ratio))
-    (format t "X from ~A to ~A (~A steps)~%"
-            xmin xmax (/ (- xmax xmin) step))
-    (format t "Y from ~A to ~A (~A steps)~%"
-            ymin ymax (/ (- ymax ymin) step))))
-
 (defun do-render (function pixel-writer width height &aux (ratio (float (/ width height) 0.0)))
   (declare (type fixnum width height))
   (let ((xmin -1.0) (xmax 1.0) (ymin -1.0) (ymax 1.0) step)
