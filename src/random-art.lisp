@@ -198,22 +198,22 @@
                  body)))
     (destructuring-bind (op &rest args) tree
       `(let ((,(first (operator-coords op)) ,x-form)
-             (,(second (operator-coords op)) ,y-form)
-             ,@(loop for binding in (operator-static-locals op)
-                     collect (list (first binding) (eval (second binding)))))
+             (,(second (operator-coords op)) ,y-form))
          (declare (ignorable ,(first (operator-coords op))
                              ,(second (operator-coords op))))
-         ,(build-mvb (mapcar #'second (operator-children op))
-                     (loop for arg in args
-                           for child in (operator-children op)
-                           for coord-forms = (first child)
-                           collect (tree->code arg
-                                               (first coord-forms)
-                                               (second coord-forms)))
-                     `(let* ,(operator-dynamic-locals op)
-                        (values ,(operator-red op)
-                                ,(operator-green op)
-                                ,(operator-blue op))))))))
+         (let ,(loop for binding in (operator-static-locals op)
+                     collect (list (first binding) (eval (second binding))))
+           ,(build-mvb (mapcar #'second (operator-children op))
+                       (loop for arg in args
+                             for child in (operator-children op)
+                             for coord-forms = (first child)
+                             collect (tree->code arg
+                                                 (first coord-forms)
+                                                 (second coord-forms)))
+                       `(let* ,(operator-dynamic-locals op)
+                          (values ,(operator-red op)
+                                  ,(operator-green op)
+                                  ,(operator-blue op)))))))))
 
 (defun code->func (code)
   (compile nil `(lambda (x y)
