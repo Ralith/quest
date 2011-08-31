@@ -94,16 +94,20 @@
       single-float-epsilon
       x))
 
+(declaim (inline fmod))
+(defun fmod (x y)
+  "Return gibberish when the quotient exceeds single-float precision."
+  (declare (type single-float x)
+           (type (single-float (0.0)) y)
+           (optimize speed))
+  (- x (* y (truncate (sb-ext:truly-the (single-float #.(float (1+ (ash -1 24)))
+                                                      #.(float (1- (ash 1 24))))
+                                        (/ x y))))))
+
 (defop mod (x y) (((x y) (ar ag ab)) ((x y) (br bg bb))) () ()
-  (if (= 0 br)
-      ar
-      (- ar (* (ftruncate ar br) br)))
-  (if (= 0 bg)
-      ag
-      (- ag (* (ftruncate ag bg) bg)))
-  (if (= 0 bb)
-      ab
-      (- ab (* (ftruncate ab bb) bb))))
+  (fmod ar br)
+  (fmod ag bg)
+  (fmod ab bb))
 
 (defun generate-tree (&optional (depth 10))
   (let ((operators0 (remove-if (alexandria:curry #'/= 0)
@@ -125,7 +129,7 @@
              (if (and bindings args)
                  `(multiple-value-bind ,(first bindings) ,(first args)
                     (declare (ignorable ,@(first bindings))
-                             (type single-float ,@(first bindings)))
+                             (type (single-float -1.0 1.0) ,@(first bindings)))
                     ,(build-mvb (rest bindings) (rest args) body))
                  body)))
     (destructuring-bind (op &rest args) tree
