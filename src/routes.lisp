@@ -1,5 +1,7 @@
 (in-package :quest)
 
+(declaim (optimize (debug 3)))
+
 (defclass route (routes:route)
   ((handler :accessor route-handler :initarg :handler)))
 
