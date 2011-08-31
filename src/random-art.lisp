@@ -102,8 +102,10 @@
            (optimize speed))
   (if (= 0 y)
       (setf y single-float-epsilon))
-  (- x (* y (truncate (sb-ext:truly-the (single-float #.(float (1+ (ash -1 24)))
-                                                      #.(float (1- (ash 1 24))))
+  (- x (* y (truncate (#+sbcl sb-ext:truly-the
+                       #-sbcl the
+                       (single-float #.(float (1+ (ash -1 24)))
+                                     #.(float (1- (ash 1 24))))
                                         (/ x y))))))
 
 (defop mod (x y) (((x y) (ar ag ab)) ((x y) (br bg bb))) () ()
