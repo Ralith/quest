@@ -13,8 +13,7 @@
                              (list :small "128x128"
                                    :large "512x512"
                                    :seeds
-                                   (loop repeat 10 collect (list :seed (write-to-string (make-seed) :base 36)))
-)
+                                   (loop repeat 10 collect (list :seed (write-to-string (make-seed) :base 36))))
                              :stream s)))
 
 (defroute random-art "/random-art"
