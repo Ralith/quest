@@ -1,11 +1,11 @@
 (defpackage #:random-art
-  (:use #:cl #:sb-cga #:zpng)
+  (:use #:cl #:zpng)
   (:export #:render #:render-to-stream #:generate))
 (in-package #:random-art)
 
-(declaim (optimize (speed 3)))
-
 (defvar *operators* ())
+
+(declaim (optimize (speed 3)))
 
 (defun operator (cons)
   (car cons))
@@ -13,141 +13,164 @@
 (defun arity (cons)
   (cdr cons))
 
-(defmacro with-op ((cons operator arity) &body body)
-  (alexandria:once-only (cons)
-    `(symbol-macrolet ((,operator (car ,cons))
-                       (,arity (cdr ,cons)))
-       ,@body)))
+(defstruct operator
+  name arity children coords static-locals dynamic-locals red green blue)
 
-(defmacro defop (name children coords locals &body body)
-  (let ((constr-name (alexandria:symbolicate "MAKE-" name)))
-    `(progn
-       (defun ,constr-name ,children
-         (let ,locals
-           (lambda ,coords
-             (declare (type single-float ,@coords))
-             ,@(butlast body 1)
-             (the vec ,(car (last body))))))
-       (pushnew (cons ',constr-name ,(length children)) *operators* :key #'car))))
+(defmethod print-object ((o operator) s)
+  (print-unreadable-object (o s :type t)
+    (princ (operator-name o) s)))
 
-(defmacro with-vec ((v x y z) &body body)
-  (alexandria:once-only (v)
-   `(symbol-macrolet ((,x (aref ,v 0))
-                      (,y (aref ,v 1))
-                      (,z (aref ,v 2)))
-      ,@body)))
+(defmacro defop (name coords children static-locals dynamic-locals red green blue)
+  `(progn
+     (pushnew (make-operator :name ',name
+                             :arity ,(length children)
+                             :children ',children
+                             :coords ',coords
+                             :static-locals ',static-locals
+                             :dynamic-locals ',dynamic-locals
+                             :red ',red
+                             :green ',green
+                             :blue ',blue)
+              *operators*
+              :key #'operator-name)))
 
-(defop variable-x () (x y) ()
-  (declare (ignore y))
-  (vec x x x))
+(defop variable-x (x y) () () ()
+  x x x)
 
-(defop variable-y () (x y) ()
-  (declare (ignore x))
-  (vec y y y))
+(defop variable-y (x y) () () ()
+  y y y)
 
-(defop constant () (x y)
-    ((c (vec (random 1.0) (random 1.0) (random 1.0))))
-  (declare (ignore x y))
-  c)
+(defop constant (x y) ()
+    ((r (random 1.0)) (g (random 1.0)) (b (random 1.0))) ()
+  r g b)
 
-(defop sum (a b) (x y) ()
+(defop sum (x y) (((x y) (r1 g1 b1)) ((x y) (r2 g2 b2))) () ()
+  (/ (+ r1 r2) 2.0)
+  (/ (+ g1 g2) 2.0)
+  (/ (+ b1 b2) 2.0))
 
-  (vec/ (vec+ (funcall a x y) (funcall b x y))
-     2.0))
+(defop product (x y) (((x y) (r1 g1 b1)) ((x y) (r2 g2 b2))) () ()
+  (* r1 r2)
+  (* g1 g2)
+  (* b1 b2))
 
-(defop product (a b) (x y) ()
-  (hadamard-product (funcall a x y) (funcall b x y)))
+(defop well (x y) (((x y) (r g b))) () ()
+  (- 1.0 (/ 2.0 (expt (+ 1.0 (* r r)) 8.0)))
+  (- 1.0 (/ 2.0 (expt (+ 1.0 (* g g)) 8.0)))
+  (- 1.0 (/ 2.0 (expt (+ 1.0 (* b b)) 8.0))))
 
-(defun well (x)
-  (declare (type single-float x))
-  (- 1.0 (/ 2.0 (expt (+ 1.0 (* x x)) 8.0))))
+(defop tent (x y) (((x y) (r g b))) () ()
+  (- 1.0 (* 2.0 (abs r)))
+  (- 1.0 (* 2.0 (abs g)))
+  (- 1.0 (* 2.0 (abs b))))
 
-(defop well (a) (x y) ()
-  (with-vec ((funcall a x y) r g b)
-    (vec (well r) (well g) (well b))))
-
-(defun tent (x)
-  (declare (type single-float x))
-  (- 1.0 (* 2.0 (abs x))))
-
-(defop tent (a) (x y) ()
-  (with-vec ((funcall a x y) r g b)
-    (vec (tent r) (tent g) (tent b))))
-
-(defop sin (a) (x y)
+(defop sin (x y) (((x y) (r g b)))
     ((phase (* (float pi 0.0) (random 1.0)))
-     (freq (+ 1.0 (random 5.0))))
-  (with-vec ((funcall a x y) r g b)
-    (vec (sin (+ phase (* freq r)))
-         (sin (+ phase (* freq g)))
-         (sin (+ phase (* freq b))))))
+     (freq (+ 1.0 (random 5.0)))) ()
+  (sin (+ phase (* freq r)))
+  (sin (+ phase (* freq g)))
+  (sin (+ phase (* freq b))))
 
-(defop level (level a b) (x y)
-    ((threshold (- 1.0 (random 2.0))))
-  (with-vec ((funcall level x y) r1 g1 b1)
-    (with-vec ((funcall a x y) r2 g2 b2)
-      (with-vec ((funcall b x y) r3 g3 b3)
-        (vec (if (< r1 threshold) r2 r3)
-             (if (< g1 threshold) g2 g3)
-             (if (< b1 threshold) b2 b3))))))
+(defop level (x y) (((x y) (r1 g1 b1)) ((x y) (r2 g2 b2)) ((x y) (r3 g3 b3)))
+    ((threshold (- 1.0 (random 2.0)))) ()
+  (if (< r1 threshold) r2 r3)
+  (if (< g1 threshold) g2 g3)
+  (if (< b1 threshold) b2 b3))
 
-(defop mix (w a b) (x y) ()
-  (let ((weight (* 0.5 (+ 1.0 (aref (funcall w x y) 0)))))
-    (vec+ (vec* (funcall a x y)
-                weight)
-          (vec* (funcall b x y)
-                (- 1.0 weight)))))
+(defop mix (x y) (((x y) (wr wg wb)) ((x y) (ar ag ab)) ((x y) (br bg bb))) ()
+  ((weight (* 0.5 (+ 1.0 wr)))
+   (compl (- 1.0 weight)))
+  (+ (* ar weight)
+     (* br compl))
+  (+ (* ag weight)
+     (* bg compl))
+  (+ (* ab weight)
+     (* bb compl)))
 
 (defun ensure-nonzero (x)
   (declare (type single-float x))
   (if (= 0.0 x)
-      0.001
+      single-float-epsilon
       x))
+(declaim (inline ensure-nonzero))
 
-(defop mod (a b) (x y) ()
-  (with-vec ((funcall a x y) ar ag ab)
-    (with-vec ((funcall b x y) br bg bb)
-      (vec (mod ar (ensure-nonzero br))
-           (mod ag (ensure-nonzero bg))
-           (mod ab (ensure-nonzero bb))))))
+(defop mod (x y) (((x y) (ar ag ab)) ((x y) (br bg bb))) () ()
+  (mod ar (ensure-nonzero br))
+  (mod ag (ensure-nonzero bg))
+  (mod ab (ensure-nonzero bb)))
 
-(defun generate (&optional (depth 10))
+(defun generate-tree (&optional (depth 10))
   (let ((operators0 (remove-if (alexandria:curry #'/= 0)
                                *operators*
-                               :key #'arity))
+                               :key #'operator-arity))
         (operators1 (remove-if (alexandria:curry #'= 0)
                                *operators*
-                               :key #'arity)))
+                               :key #'operator-arity)))
     (if (<= depth 0)
-        (funcall (operator (alexandria:random-elt operators0)))
-        (with-op ((alexandria:random-elt operators1) operator arity)
-          ;; TODO: randomart.py-style selection
-          (apply operator (loop repeat arity
-                                collect (generate (1- depth))))))))
+        (list (alexandria:random-elt operators0)) ; Leaf
+        (let ((op (alexandria:random-elt operators1)))
+         ;; TODO: randomart.py-style selection
+         (list* op
+                (loop repeat (operator-arity op)
+                      collect (generate-tree (1- depth))))))))
 
-(defun vec->pixel (vec)
-  (declare (type vec vec))
-  (with-vec (vec r g b)
-   (make-array 3 :element-type 'fixnum :initial-contents
-               (list (min 255 (truncate (* 128 (+ 1 (min 1.0 (max -1.0 r))))))
-                     (min 255 (truncate (* 128 (+ 1 (min 1.0 (max -1.0 g))))))
-                     (min 255 (truncate (* 128 (+ 1 (min 1.0 (max -1.0 b))))))))))
+(defun tree->code (tree &optional (x-form 'x) (y-form 'y))
+  (flet ((build-mvb (bindings args body)
+           (if (and bindings args)
+               `(multiple-value-bind ,(first bindings) ,(first args)
+                  (declare (ignorable ,@(first bindings))
+                           (type single-float ,@(first bindings)))
+                  ,(build-mvb (rest bindings) (rest args) body))
+               body)))
+    (destructuring-bind (op &rest args) tree
+      `(let ((,(first (operator-coords op)) ,x-form)
+             (,(second (operator-coords op)) ,y-form)
+             ,@(loop for binding in (operator-static-locals op)
+                     collect (list (first binding) (eval (second binding)))))
+         (declare (ignorable ,(first (operator-coords op))
+                             ,(second (operator-coords op))))
+         ,(build-mvb (mapcar #'second (operator-children op))
+                     (loop for arg in args
+                           for child in (operator-children op)
+                           for coord-forms = (first child)
+                           collect (tree->code arg
+                                               (first coord-forms)
+                                               (second coord-forms)))
+                     `(let* ,(operator-dynamic-locals op)
+                        (values ,(operator-red op)
+                                ,(operator-green op)
+                                ,(operator-blue op))))))))
+
+(defun code->func (code)
+  (compile nil
+           (eval `(lambda (x y)
+                    (declare (optimize (speed 3)))
+                    ,code))))
+
+(defun generate (&optional (depth 10))
+  (code->func (tree->code (generate-tree depth))))
+
+(defun coord->color (x)
+  (declare (type single-float x))
+  (truncate (* 128 (+ 1 (min (/ 255.0 256.0) (max -1.0 x))))))
+(declaim (inline coord->color))
+
 
 (defun do-render (function pixel-writer width height)
+  (declare (type fixnum width height))
   (format t "|----------------------------------------|~%|")
-  (loop for x from -1.0 to 1.0 by (/ 2 width)
+  (loop for x from -1.0 to 1.0 by (/ 2.0 width)
         for i below width
-        with progress = 0
-        do (loop for y from -1.0 to 1.0 by (/ 2 height)
+        with progress = 0.0
+        do (loop for y from -1.0 to 1.0 by (/ 2.0 height)
                  for j below height
-                 do (funcall pixel-writer i j
-                             (vec->pixel
-                              (funcall function
-                                       (float x 0.0)
-                                       (float y 0.0)))))
+                 do (multiple-value-bind (r g b)
+                        (funcall function x y)
+                      (funcall pixel-writer i j
+                               (coord->color r) (coord->color g) (coord->color b))))
            (when (> (/ i width) progress)
              (format t "=")
-             (incf progress (/ 1 40))))
+             (incf progress (/ 1.0 40.0))))
   (format t "|~%"))
 
 (defun render (function &optional (width 256) (height 256))
@@ -157,31 +180,20 @@
                              :height height))
          (image (data-array png)))
     (do-render function
-      (lambda (y x pixel)
-        (with-vec (pixel r g b)
-          (setf (aref image y x 0) r
-                (aref image y x 1) g
-                (aref image y x 2) b)))
+      (lambda (y x r g b)
+        (setf (aref image y x 0) r
+              (aref image y x 1) g
+              (aref image y x 2) b))
       width height)
     png))
 
 (defun render-to-file (function file &optional (width 256) (height 256))
-  (let ((png (make-instance 'pixel-streamed-png
-                             :color-type :truecolor
-                             :width width
-                             :height height)))
-    (with-open-file (stream file
-			    :direction :output
-			    :if-exists :supersede
-			    :if-does-not-exist :create
-			    :element-type '(unsigned-byte 8))
-      (start-png png stream)
-      (do-render function
-        (lambda (x y pixel)
-          (declare (ignore x y))
-          (write-pixel pixel png))
-        width height)
-      (finish-png png))))
+  (with-open-file (stream file
+                          :direction :output
+                          :if-exists :supersede
+                          :if-does-not-exist :create
+                          :element-type '(unsigned-byte 8))
+    (render-to-stream function stream width height)))
 
 (defun render-to-stream (function stream &optional (width 256) (height 256))
   (let ((png (make-instance 'pixel-streamed-png
@@ -190,8 +202,9 @@
                             :height height)))
     (start-png png stream)
     (do-render function
-      (lambda (x y pixel)
+      (lambda (x y r g b)
         (declare (ignore x y))
-        (write-pixel pixel png))
+        (write-pixel (list r g b) png))
       width height)
-    (finish-png png)))
+    (finish-png png))
+  (values))
