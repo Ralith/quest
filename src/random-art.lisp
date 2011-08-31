@@ -5,13 +5,56 @@
 
 (defparameter *operators* ())
 
+;;; Initialized only for REPL convenience; all actual uses should use dynamic bindings for safety.
+(defvar *randbuf* (cffi:foreign-alloc :char :count 24))
+
 (declaim (optimize (speed 3)))
 
-(defun operator (cons)
-  (car cons))
+(cffi:defcfun (%drand48-r "drand48_r") :int
+  (buffer :pointer)
+  (result (:pointer :double)))
 
-(defun arity (cons)
-  (cdr cons))
+(cffi:defcfun (%lrand48-r "lrand48_r") :int
+  (buffer :pointer)
+  (result (:pointer :long)))
+
+(cffi:defcfun (%mrand48-r "mrand48_r") :int
+  (buffer :pointer)
+  (result (:pointer :long)))
+
+(cffi:defcfun (%seed48-r "seed48_r") :int
+  (seed (:array :unsigned-short 3))
+  (buffer :pointer))
+
+(defun seed48 (seed)
+  (declare (type (integer 0 281474976710655) seed))
+  (%seed48-r (vector (ldb (byte 16 32) seed)
+                     (ldb (byte 16 16) seed)
+                     (ldb (byte 16 0)  seed))
+             *randbuf*))
+
+(defun drand48 ()
+  (cffi:with-foreign-object (r :double)
+    (%drand48-r *randbuf* r)
+    (cffi:mem-aref r :double)))
+
+(defun lrand48 ()
+  (cffi:with-foreign-object (r :long)
+    (%lrand48-r *randbuf* r)
+    (cffi:mem-aref r :long)))
+
+(defun mrand48 ()
+  (cffi:with-foreign-object (r :long)
+    (%mrand48-r *randbuf* r)
+    (cffi:mem-aref r :long)))
+
+(defun rand-elt (seq)
+  (nth (rem (lrand48) (length seq)) seq))
+
+(defun rand (limit)
+  (typecase limit
+    (integer (rem (lrand48) limit))
+    (float (* limit (float (drand48) 0.0)))))
 
 (defstruct operator
   name arity children coords static-locals dynamic-locals red green blue)
@@ -40,8 +83,16 @@
 (defop variable-y (x y) () () ()
   y y y)
 
+(defop matrix (x y) ()
+    ((a (- 1.0 (rand 2.0))) (b (- 1.0 (rand 2.0)))
+     (c (- 1.0 (rand 2.0))) (d (- 1.0 (rand 2.0)))
+     (e (- 1.0 (rand 2.0))) (f (- 1.0 (rand 2.0)))) ()
+  (+ (* a x) (* b y))
+  (+ (* c x) (* d y))
+  (+ (* e x) (* f y)))
+
 (defop constant (x y) ()
-    ((r (random 1.0)) (g (random 1.0)) (b (random 1.0))) ()
+    ((r (rand 1.0)) (g (rand 1.0)) (b (rand 1.0))) ()
   r g b)
 
 (defop sum (x y) (((x y) (r1 g1 b1)) ((x y) (r2 g2 b2))) () ()
@@ -65,14 +116,14 @@
   (- 1.0 (* 2.0 (abs b))))
 
 (defop sin (x y) (((x y) (r g b)))
-    ((phase (* (float pi 0.0) (random 1.0)))
-     (freq (+ 1.0 (random 5.0)))) ()
+    ((phase (* (float pi 0.0) (rand 1.0)))
+     (freq (+ 1.0 (rand 5.0)))) ()
   (sin (+ phase (* freq r)))
   (sin (+ phase (* freq g)))
   (sin (+ phase (* freq b))))
 
 (defop level (x y) (((x y) (r1 g1 b1)) ((x y) (r2 g2 b2)) ((x y) (r3 g3 b3)))
-    ((threshold (- 1.0 (random 2.0)))) ()
+    ((threshold (- 1.0 (rand 2.0)))) ()
   (if (< r1 threshold) r2 r3)
   (if (< g1 threshold) g2 g3)
   (if (< b1 threshold) b2 b3))
@@ -98,8 +149,7 @@
 (defun fmod (x y)
   "Return gibberish when the quotient exceeds single-float precision."
   (declare (type single-float x)
-           (type (single-float -1.0 1.0) y)
-           (optimize speed))
+           (type (single-float -1.0 1.0) y))
   (if (= 0 y)
       (setf y single-float-epsilon))
   (- x (* y (truncate (#+sbcl sb-ext:truly-the
@@ -123,20 +173,20 @@
     (symbol (find tree *operators* :key #'operator-name))
     (list (mapcar #'load-tree tree))))
 
-(defun generate-tree (&optional (depth 5))
+(defun generate-tree (min-depth max-depth &optional (current-depth 0))
   (let ((operators0 (remove-if (alexandria:curry #'/= 0)
                                *operators*
                                :key #'operator-arity))
         (operators1 (remove-if (alexandria:curry #'= 0)
                                *operators*
                                :key #'operator-arity)))
-    (if (<= depth 0)
-        (list (alexandria:random-elt operators0)) ; Leaf
-        (let ((op (alexandria:random-elt operators1)))
-         ;; TODO: randomart.py-style selection
-         (list* op
-                (loop repeat (operator-arity op)
-                      collect (generate-tree (1- depth))))))))
+    (let ((op (rand-elt (cond
+                          ((< current-depth min-depth) operators1)
+                          ((>= current-depth max-depth) operators0)
+                          (t *operators*)))))
+      (list* op
+             (loop repeat (operator-arity op)
+                   collect (generate-tree min-depth max-depth (1+ current-depth)))))))
 
 (defun tree->code (tree &optional (x-form 'x) (y-form 'y))
   (labels ((build-mvb (bindings args body)
@@ -171,8 +221,10 @@
                            (type single-float x y))
                   ,code)))
 
-(defun generate (&optional (depth 5))
-  (code->func (tree->code (generate-tree depth))))
+(defun generate (&key (min-depth 2) (max-depth 6) (seed (get-internal-real-time)))
+  (cffi:with-foreign-object (*randbuf* :char 24)
+    (seed48 seed)
+    (code->func (tree->code (generate-tree min-depth max-depth)))))
 
 (defun coord->color (x)
   (declare (type single-float x))
@@ -181,7 +233,8 @@
 
 
 (defun do-render (function pixel-writer width height &aux (ratio (float (/ width height) 0.0)))
-  (declare (type fixnum width height))
+  (declare (type fixnum width height)
+           (optimize (speed 3)))
   (let ((xmin -1.0) (xmax 1.0) (ymin -1.0) (ymax 1.0) step)
     (if (> width height)
         (let ((recipio (/ 1.0 ratio)))
