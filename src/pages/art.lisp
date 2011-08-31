@@ -7,17 +7,10 @@
   (random (expt 2 48)))
 
 
-(defroute random-art "/art-index"
-  (with-output-to-string (s)
-    (fill-and-print-template (find-template "art-index")
-                             (list :small "128x128"
-                                   :large "512x512"
-                                   :seeds
-                                   (loop repeat 10 collect (list :seed (write-to-string (make-seed) :base 36))))
-                             :stream s)))
-
-(defroute random-art "/random-art"
-  (redirect "/art"))
+(defroute art-seed-redirect "/random-art"
+  (redirect (with-output-to-string (s)
+              (princ "/art/" s)
+              (write (make-seed) :base 36 :stream s))))
 
 (defroute random-art-sized "/random-art/:(x)x:(y)"
   (redirect
@@ -26,10 +19,16 @@
      (write (make-seed) :base 36 :stream s)
      (format s "/~Dx~D" (parse-integer x) (parse-integer y)))))
 
-(defroute art-seed-redirect "/art"
-  (redirect (with-output-to-string (s)
-              (princ "/art/" s)
-              (write (make-seed) :base 36 :stream s))))
+(defroute art-index "/art/"
+  (with-output-to-string (s)
+    (fill-and-print-template (find-template "art-index")
+                             (list :small "128x128"
+                                   :large "512x512"
+                                   :seeds
+                                   (loop repeat 10 collect (list :seed (write-to-string (make-seed) :base 36))))
+                             :stream s)))
+
+
 
 (defroute art-size-redirect "/art/:seed"
   (redirect (format nil "/art/~A/~Dx~D" seed 512 512)))
