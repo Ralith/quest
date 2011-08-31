@@ -16,6 +16,12 @@
 
 (defroute art "/art/:seed/:(x)x:(y)"
   (setf (content-type*) "image/png")
-  (random-art:render-to-stream (random-art:generate :seed (parse-integer seed :radix 36))
-                               (send-headers)
-                               (parse-integer x) (parse-integer y)))
+  (let ((seed (parse-integer seed :radix 36)))
+    (setf seed
+          (apply #'logxor (loop for i from 0
+                                for chunk = (ldb (byte 48 (* 48 i)) seed)
+                                until (= chunk 0)
+                                collect chunk)))
+    (random-art:render-to-stream (random-art:generate :seed seed)
+                                 (send-headers)
+                                 (parse-integer x) (parse-integer y))))
