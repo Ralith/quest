@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+  <head>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+    <title>Art!</title>
+    <style type="text/css"> 
+      .gallery_pic {margin: 4px; float: left; border: 1px solid; }
+    </style>
+  </head>
+  <body>
+    <!-- TMPL_LOOP seeds -->
+    <div class="gallery_pic">
+      <a href="/art/<!-- TMPL_VAR seed -->/<!-- TMPL_VAR large -->">
+        <img src="/art/<!-- TMPL_VAR seed -->/<!-- TMPL_VAR small -->"
+             title="<!-- TMPL_VAR seed -->"/>
+      </a>
+    </div>
+    <br />
+    <!-- /TMPL_LOOP -->
+  </body>
+</html>
