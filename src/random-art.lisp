@@ -98,8 +98,10 @@
 (defun fmod (x y)
   "Return gibberish when the quotient exceeds single-float precision."
   (declare (type single-float x)
-           (type (single-float (-1.0)) y)
+           (type (single-float -1.0 1.0) y)
            (optimize speed))
+  (if (= 0 y)
+      (setf y single-float-epsilon))
   (- x (* y (truncate (sb-ext:truly-the (single-float #.(float (1+ (ash -1 24)))
                                                       #.(float (1- (ash 1 24))))
                                         (/ x y))))))
