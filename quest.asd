@@ -16,4 +16,5 @@
                       :serial t
                       :components
                       ((:file "index")
-                       (:file "quest")))))))
+                       (:file "quest")
+                       (:file "art")))))))
