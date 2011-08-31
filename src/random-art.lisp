@@ -156,11 +156,10 @@
                                 ,(operator-blue op))))))))
 
 (defun code->func (code)
-  (compile nil
-           (eval `(lambda (x y)
-                    (declare (optimize (speed 3))
-                             (type single-float x y))
-                    ,code))))
+  (compile nil `(lambda (x y)
+                  (declare (optimize (speed 3))
+                           (type single-float x y))
+                  ,code)))
 
 (defun generate (&optional (depth 10))
   (code->func (tree->code (generate-tree depth))))
