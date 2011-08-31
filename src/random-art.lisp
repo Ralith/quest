@@ -173,7 +173,7 @@
              (incf progress (/ 1.0 40.0))))
   (format t "|~%"))
 
-(defun render (function &optional (width 256) (height 256))
+(defun render (function &optional (width 512) (height 512))
   (let* ((png (make-instance 'png
                              :color-type :truecolor
                              :width width
@@ -187,7 +187,7 @@
       width height)
     png))
 
-(defun render-to-file (function file &optional (width 256) (height 256))
+(defun render-to-file (function file &optional (width 512) (height 512))
   (with-open-file (stream file
                           :direction :output
                           :if-exists :supersede
@@ -195,7 +195,7 @@
                           :element-type '(unsigned-byte 8))
     (render-to-stream function stream width height)))
 
-(defun render-to-stream (function stream &optional (width 256) (height 256))
+(defun render-to-stream (function stream &optional (width 512) (height 512))
   (let ((png (make-instance 'pixel-streamed-png
                             :color-type :truecolor
                             :width width
