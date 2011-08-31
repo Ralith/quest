@@ -113,7 +113,7 @@
   (fmod ag bg)
   (fmod ab bb))
 
-(defun generate-tree (&optional (depth 10))
+(defun generate-tree (&optional (depth 5))
   (let ((operators0 (remove-if (alexandria:curry #'/= 0)
                                *operators*
                                :key #'operator-arity))
@@ -161,7 +161,7 @@
                            (type single-float x y))
                   ,code)))
 
-(defun generate (&optional (depth 10))
+(defun generate (&optional (depth 5))
   (code->func (tree->code (generate-tree depth))))
 
 (defun coord->color (x)
