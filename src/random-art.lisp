@@ -163,18 +163,6 @@
   (sin (+ phase (* freq g)))
   (sin (+ phase (* freq b))))
 
-(defop bias-sin (x y)
-    ((rphase (* (float pi 0.0) (rand 1.0)))
-     (rfreq (+ 1.0 (rand 5.0)))
-     (gphase (* (float pi 0.0) (rand 1.0)))
-     (gfreq (+ 1.0 (rand 5.0)))
-     (bphase (* (float pi 0.0) (rand 1.0)))
-     (bfreq (+ 1.0 (rand 5.0))))
-    (((x y) (r g b))) ()
-  (sin (+ rphase (* rfreq r)))
-  (sin (+ gphase (* gfreq g)))
-  (sin (+ bphase (* bfreq b))))
-
 (defop tan (x y)
     ((phase (* (float pi 0.0) (rand 1.0)))
      (freq (+ 1.0 (rand 5.0))))
