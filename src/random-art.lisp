@@ -92,6 +92,30 @@
   (+ (* c x) (* d y))
   (+ (* e x) (* f y)))
 
+(defop distance (x y) () ()
+  ((d (/ (sqrt (+ (* x x) (* y y))) 2.0)))
+  d d d)
+
+(defop manhattan-distance (x y) () ()
+  ((d (+ (- 1) (abs x) (abs y))))
+  d d d)
+
+(defop square (x y) () ()
+  ((ax (abs x)) (ay (abs y))
+   (d (- 1.0 (* 2 (if (> ax ay) ax ay)))))
+  d d d)
+
+(defop angle-360 (x y) () ()
+  ((a (/ (atan y x) (float pi 0.0))))
+  a a a)
+
+(defop angle-180 (x y) () ()
+  ((a (/ (if (> x 0)
+             (atan y x)
+             (atan y (- x)))
+         (/ (float pi 0.0) 2.0))))
+  a a a)
+
 (defop coord-matrix (x y) 
     ((a (- 1.5 (rand 3.0))) (b (- 1.5 (rand 3.0))) (c (- 1.0 (rand 2.0)))
      (d (- 1.5 (rand 3.0))) (e (- 1.5 (rand 3.0))) (f (- 1.0 (rand 2.0))))
