@@ -31,9 +31,9 @@
 
 
 (defroute art-size-redirect "/art/:seed"
-  (redirect (format nil "/art/~A/~Dx~D" seed 512 512)))
+  (redirect (format nil "/art/~A/size/~Dx~D" seed 512 512)))
 
-(defroute art "/art/:seed/:(x)x:(y)"
+(defroute art "/art/:seed/size/:(x)x:(y)"
   (setf (content-type*) "image/png")
   (let ((seed (parse-integer seed :radix 36)))
     (setf seed
