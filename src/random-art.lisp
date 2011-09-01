@@ -226,7 +226,8 @@
 
 (defun load-tree (tree)
   (etypecase tree
-    (symbol (find tree *operators* :key #'operator-name))
+    (symbol (or (find tree *operators* :key #'operator-name)
+                (error "No such operator loaded: ~A" tree)))
     (list (mapcar #'load-tree tree))))
 
 (defun generate-tree (min-depth max-depth &optional (current-depth 0))
