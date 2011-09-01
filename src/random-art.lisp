@@ -31,7 +31,8 @@
   (%seed48-r (vector (ldb (byte 16 32) seed)
                      (ldb (byte 16 16) seed)
                      (ldb (byte 16 0)  seed))
-             *randbuf*))
+             *randbuf*)
+  (values))
 
 (defun drand48 ()
   (cffi:with-foreign-object (r :double)
