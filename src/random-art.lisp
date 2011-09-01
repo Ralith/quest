@@ -106,7 +106,7 @@
   d d d)
 
 (defop angle-n (x y)
-    ((count (1+ (random 6))))
+    ((count (1+ (rand 6))))
     ()
   ((a (- 1.0 (mod (/ (* count (atan y x)) (float pi 0.0)) 2.0))))
   a a a)
