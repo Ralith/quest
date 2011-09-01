@@ -229,7 +229,7 @@
              (if (and bindings args)
                  `(multiple-value-bind ,(first bindings) ,(first args)
                     (declare (ignorable ,@(first bindings))
-                             (type (single-float -128.0 128.0) ,@(first bindings)))
+                             (type (single-float -1024.0 1024.0) ,@(first bindings)))
                     ,(build-mvb (rest bindings) (rest args) body))
                  body)))
     (destructuring-bind (op &rest args) tree
