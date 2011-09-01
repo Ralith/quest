@@ -93,10 +93,10 @@
   (+ (* e x) (* f y)))
 
 (defop coord-matrix (x y) 
-    ((a (- 1.0 (rand 2.0))) (b (- 1.0 (rand 2.0)))
-     (d (- 1.0 (rand 2.0))) (e (- 1.0 (rand 2.0))))
-    ((((+ (* a x) (* b y))
-       (+ (* d x) (* e y)))
+    ((a (- 1.5 (rand 3.0))) (b (- 1.5 (rand 3.0))) (c (- 1.0 (rand 2.0)))
+     (d (- 1.5 (rand 3.0))) (e (- 1.5 (rand 3.0))) (f (- 1.0 (rand 2.0))))
+    ((((+ (* a x) (* b y) c)
+       (+ (* d x) (* e y) f))
       (red green blue))) ()
   red green blue)
 
