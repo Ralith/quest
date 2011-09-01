@@ -102,12 +102,13 @@
   d d d)
 
 (defop square (x y) () ()
-  ((ax (abs x)) (ay (abs y))
-   (d (- 1.0 (* 2 (max ax ay)))))
+  ((d (- 1.0 (* 2.0 (max (abs x) (abs y))))))
   d d d)
 
-(defop angle-360 (x y) () ()
-  ((a (/ (atan y x) (float pi 0.0))))
+(defop angle-n (x y)
+    ((count (1+ (random 6))))
+    ()
+  ((a (- 1.0 (mod (/ (* count (atan y x)) (float pi 0.0)) 2.0))))
   a a a)
 
 (defop angle-180 (x y) () ()
