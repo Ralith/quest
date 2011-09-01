@@ -124,11 +124,7 @@
       (red green blue))) ()
   red green blue)
 
-;; (defop color-matrix (x y)
-;;     ((a (- 1.5 (rand 3.0))) (b (- 1.5 (rand 3.0))) (c (- 1.0 (rand 2.0)))
-;;      (d (- 1.5 (rand 3.0))) (e (- 1.5 (rand 3.0))) (f (- 1.0 (rand 2.0)))
-;;      (g (- 1.5 (rand 3.0))) (h (- 1.5 (rand 3.0))) (i (- 1.0 (rand 2.0))))
-;;     )
+
 
 (defop constant (x y)
     ((r (rand 1.0)) (g (rand 1.0)) (b (rand 1.0)))
