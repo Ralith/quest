@@ -254,7 +254,7 @@
 (defun code->func (code)
   (compile nil `(lambda (x y)
                   (declare (optimize (speed 3))
-                           (type single-float x y))
+                           (type (single-float -1.0 1.0) x y))
                   ,code)))
 
 (defun generate (&key (min-depth 4) (max-depth 6) (seed (get-internal-real-time)))
