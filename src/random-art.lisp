@@ -94,7 +94,7 @@
   (+ (* e x) (* f y)))
 
 (defop distance (x y) () ()
-  ((d (/ (sqrt (+ (* x x) (* y y))) 2.0)))
+  ((d (- 1.0 (* 2.0 (sqrt (+ (* x x) (* y y)))))))
   d d d)
 
 (defop manhattan-distance (x y) () ()
@@ -103,7 +103,7 @@
 
 (defop square (x y) () ()
   ((ax (abs x)) (ay (abs y))
-   (d (- 1.0 (* 2 (if (> ax ay) ax ay)))))
+   (d (- 1.0 (* 2 (max ax ay)))))
   d d d)
 
 (defop angle-360 (x y) () ()
@@ -111,9 +111,7 @@
   a a a)
 
 (defop angle-180 (x y) () ()
-  ((a (/ (if (> x 0)
-             (atan y x)
-             (atan y (- x)))
+  ((a (/ (atan y (abs x))
          (/ (float pi 0.0) 2.0))))
   a a a)
 
@@ -195,8 +193,8 @@
   "Return gibberish when the quotient exceeds single-float precision."
   (declare (type single-float x)
            (type (single-float -1.0 1.0) y))
-  (if (= 0 y)
-      (setf y single-float-epsilon))
+  (if (< (abs y) single-float-epsilon)
+      (setf y (* (if (< y 0) -1.0 1.0) single-float-epsilon)))
   (- x (* y (truncate (#+sbcl sb-ext:truly-the
                        #-sbcl the
                        (single-float #.(float (1+ (ash -1 24)))
@@ -270,7 +268,7 @@
                            (type (single-float -1.0 1.0) x y))
                   ,code)))
 
-(defun generate (&key (min-depth 4) (max-depth 6) (seed (get-internal-real-time)))
+(defun generate (&key (min-depth 4) (max-depth 5) (seed (get-internal-real-time)))
   (cffi:with-foreign-object (*randbuf* :char 24)
     (seed48 seed)
     (code->func (tree->code (generate-tree min-depth max-depth)))))
