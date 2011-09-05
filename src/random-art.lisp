@@ -8,8 +8,6 @@
 ;;; Initialized only for REPL convenience; all actual uses should use dynamic bindings for safety.
 (defvar *randbuf* (cffi:foreign-alloc :char :count 24))
 
-(declaim (optimize (speed 3)))
-
 (cffi:defcfun (%drand48-r "drand48_r") :int
   (buffer :pointer)
   (result (:pointer :double)))

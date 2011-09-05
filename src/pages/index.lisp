@@ -3,24 +3,24 @@
 (declaim (optimize (debug 3)))
 
 ;;; TODO: Most recently updated
-(defprepared frontpage-quests
-    (:limit (:select :* :from '#:quests) :$1))
+(defprepared-with-names frontpage-quests (count)
+    ((:limit (:select :* :from 'quest) :$1) count)
+    (:dao quest))
 
 (defroute frontpage "/"
-  (let ((values (loop for (id title author chapter-count quest-date) in (frontpage-quests 10)
-                      for (chapter-id chapter-title quest ordinal post-count chapter-date) = (chapter-details (latest-chapter-id id))
+  (let ((values (loop for quest in (frontpage-quests 10)
+                      for chapter = (latest-chapter quest)
                       collecting
-                      `(:quest-title ,title
-                        :quest-id ,(write-to-string id :base 36)
-                        :chapter-title ,chapter-title
+                      `(:quest-title ,(title quest)
+                        :quest-id ,(write-to-string (id quest) :base 36)
+                        :chapter-title ,(title chapter)
                         :posts
-                        ,(loop with updates = (updates-of chapter-id)
-                               for (pid pau padd ptit pnam pbod pdat ped)
-                               in (subst nil :null (mapcar #'post-details updates))
-                               collecting `(:post-title ,ptit
-                                            :author ,(userid->name pau)
-                                            :date ,pdat
-                                            :body ,pbod))))))
+                        ,(loop for update in (updates-of chapter)
+                               for post = (get-dao 'post (post-id update))
+                               collecting `(:post-title ,(title post)
+                                            :author ,(name (get-dao 'user (user-id post)))
+                                            :date ,(created post)
+                                            :body ,(body post)))))))
     (with-output-to-string (s)
       (fill-and-print-template (find-template "index") (list :quests values)
                                :stream s))))

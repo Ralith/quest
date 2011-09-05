@@ -2,48 +2,53 @@
 
 (declaim (optimize (debug 3)))
 
-(defconstant +salt-size+ 32)
+(defdao user ()
+    ((id :col-type serial :reader id)
+     (name :col-type text :initarg :name :reader name
+           :initform (error "Users must be named"))
+     (email :col-type text :initarg :email :reader email
+            :initform (error "Users must have an email"))
+     (iterations :col-type integer :initarg :iterations :reader iterations
+                 :initform (error "Users must have a hash iteration count")
+                 :documentation "Number of iterations used for PBKDF2-SHA512")
+     (salt :col-type bytea :initarg :salt :reader salt
+           :initform (error "Users must have a salt"))
+     (password :col-type bytea :initarg :password :reader password
+               :initform (error "Users must have a password"))
+     (created :col-type :timestamp-with-time-zone :col-default (:now) :reader created))
+  (:keys id)
+  (:unique name))
 
-(defprepared-with-names %register (name email password)
-    ((:insert-into '#:users :set '#:name :$1 '#:email :$2 '#:password :$3 :returning '#:id)
-     name email password)
-    :single)
-
-(defprepared-with-names username->id (name)
-    ((:select '#:id :from '#:users :where (:= '#:name :$1))
+(defprepared-with-names find-user (name)
+    ((:select :* :from 'user :where (:= 'name '$1))
      name)
-    :single)
+    (:dao user :single))
 
-(defprepared-with-names userid->name (user-id)
-    ((:select :name :from :users :where (:= :id :$1))
-     user-id)
-    :single)
+(defconstant +hash-iterations+ 64)
+(defun hash-password (password salt &optional (iterations +hash-iterations+)
+                      &aux (digest :sha512))
+  "Password hashing function."
+  (ironclad:derive-key
+   (make-instance 'ironclad:pbkdf2 :digest digest)
+   (ironclad:ascii-string-to-byte-array password)
+   salt
+   iterations (ironclad:digest-length digest)))
 
-(defprepared-with-names password-of (user-id)
-    ((:select '#:password :from '#:users :where (:= '#:id :$1))
-     user-id)
-    :single)
+(defun gensalt (length)
+  (map-into (make-array length :element-type '(unsigned-byte 8)) (curry #'random 256)))
 
-(defprepared-with-names (setf password-of) (password user-id)
-    ((:update '#:users :set '#:password :$1 :where (:= '#:id :$2))
-     password user-id)
-    :none)
+(defun register (name email password &aux (salt (gensalt 32)))
+  (make-dao 'user :name name :email email
+                  :iterations +hash-iterations+
+                  :salt salt
+                  :password (hash-password password salt +hash-iterations+)))
 
-(defprepared-with-names user-details (id)
-    ((:limit (:select :* :from '#:users :where (:= '#:id :$1))
-             1)
-     id)
-    :row)
-
-(defun register (name email password)
-  (nth-value 0 (%register name email (bcrypt:hash password))))
-
-(defun login (name password &aux)
-  (let* ((user-id (username->id name))
-         (hash (password-of user-id)))
-    (if (and hash (bcrypt:password= password hash))
-        (progn ;; (start-session)
-               ;; (setf (session-value :user)
-               ;;       name)
-          user-id)
-        nil)))
+(defun login (name password &aux (user (find-user name)))
+  (if (and user
+           (equalp (password user)
+                   (hash-password password (salt user) (iterations user))))
+      (progn ;; (start-session)
+        ;; (setf (session-value :user)
+        ;;       name)
+        user)
+      nil))
