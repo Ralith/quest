@@ -22,7 +22,11 @@
                                             :date ,(created post)
                                             :body ,(body post)))))))
     (with-output-to-string (s)
-      (fill-and-print-template (find-template "index") (list :quests values)
+      (fill-and-print-template (find-template "index")
+                               (list
+                                :user-name (let ((session (hunchentoot:session hunchentoot:*request*)))
+                                             (and session (name (get-dao 'user (user-id session)))))
+                                :quests values)
                                :stream s))))
 
 (defun startup ()

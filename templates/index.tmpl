@@ -6,6 +6,9 @@
     <title>Quests</title>
   </head>
   <body>
+    <!-- TMPL_IF user-name -->
+    Welcome, <!-- TMPL_VAR user-name -->!
+    <!-- /TMPL_IF -->
     <!-- TMPL_LOOP quests -->
     <hr />
     <h3><a href="/quest/<!-- TMPL_VAR quest-id -->"><!-- TMPL_VAR quest-title --></a></h3>

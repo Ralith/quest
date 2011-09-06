@@ -1,6 +1,6 @@
 (asdf:defsystem quest
   :serial t
-  :depends-on (#:hunchentoot #:html-template #:parenscript #:postmodern #:alexandria #:anaphora #:routes #:ironclad #:zpng #:cffi)
+  :depends-on (#:hunchentoot #:html-template #:parenscript #:postmodern #:alexandria #:anaphora #:routes #:ironclad #:zpng #:cffi #:cl-base64)
   :components
   ((:module "src"
             :serial t
@@ -13,6 +13,7 @@
              (:file "users")
              (:file "quests")
              (:file "posts")
+             (:file "sessions")
              (:file "random-art")
              (:module "pages"
                       :serial t

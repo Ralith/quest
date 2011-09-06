@@ -6,7 +6,14 @@
   (defroute login "/login"
     (with-params (:post name password)
       (if (and name password)
-          (if (validate-user name password)
-              "Login success!"
-              "Invalid credentials")
+          (if-let (user (validate-user name password))
+            (progn (start-session user)
+                   "Login success!")
+            "Invalid credentials")
           (hunchentoot:handle-static-file page)))))
+
+(defroute logout "/logout"
+  (if (hunchentoot:session hunchentoot:*request*)
+      (progn (end-session)
+             "Logged out.")
+      "You're not logged in!"))
