@@ -23,12 +23,7 @@
   (:foreign-key chapter chapter-id id)
   (:unique ordinal chapter-id))
 
-(defprepared-with-names alloc-update-ordinal (chapter-id)
-    ((:update 'chapter :set 'update-count (:+ 1 'update-count)
-              :where (:= 'id '$1)
-              :returning 'update-count)
-     chapter-id)
-    :single)
+(def-ordinal-allocator alloc-update-ordinal chapter update)
 
 (defmethod insert-dao :around ((update update))
   (with-transaction (insert-update)
@@ -45,12 +40,7 @@
   (:foreign-key update update-id post-id)
   (:unique ordinal update-id))
 
-(defprepared-with-names alloc-suggestion-ordinal (update-id)
-    ((:update 'update :set 'suggestion-count (:+ 1 'suggestion-count)
-              :where (:= 'post-id '$1)
-              :returning 'suggestion-count)
-     update-id)
-    :single)
+(def-ordinal-allocator alloc-suggestion-ordinal update suggestion)
 
 (defmethod insert-dao :around ((suggestion suggestion))
   (with-transaction (insert-suggestion)
@@ -63,3 +53,13 @@
                 'ordinal)
      (id chapter))
     (:dao update))
+
+(defdao discussion-post ()
+    ((post-id :col-type integer :reader post-id)
+     (discussion-id :col-type integer :reader discussion-id)
+     (ordinal :col-type integer :reader ordinal))
+  (:keys post-id)
+  (:foreign-key post post-id id)
+  (:foreign-key discussion discussion-id id))
+
+(def-ordinal-allocator alloc-discussion-post-ordinal discussion discussion-post post-count)
