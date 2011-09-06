@@ -6,14 +6,14 @@
     ((id :col-type serial :reader id)
      (name :col-type text :initarg :name :reader name
            :initform (error "Users must be named"))
-     (email :col-type text :initarg :email :reader email
+     (email :col-type text :initarg :email :accessor email
             :initform (error "Users must have an email"))
-     (iterations :col-type integer :initarg :iterations :reader iterations
+     (iterations :col-type integer :initarg :iterations :accessor iterations
                  :initform (error "Users must have a hash iteration count")
                  :documentation "Number of iterations used for PBKDF2-SHA512")
-     (salt :col-type bytea :initarg :salt :reader salt
+     (salt :col-type bytea :initarg :salt :accessor salt
            :initform (error "Users must have a salt"))
-     (password :col-type bytea :initarg :password :reader password
+     (password :col-type bytea :initarg :password :accessor password
                :initform (error "Users must have a password"))
      (created :col-type :timestamp-with-time-zone :col-default (:now) :reader created))
   (:keys id)
