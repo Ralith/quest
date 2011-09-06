@@ -10,4 +10,4 @@
               "That user already exists!"
               (progn (add-user name email password)
                      (format nil "Welcome, ~A!  You have been registered." name)))
-          (handle-static-file page)))))
+          (hunchentoot:handle-static-file page)))))

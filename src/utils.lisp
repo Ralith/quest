@@ -12,8 +12,8 @@
 (defmacro with-params ((method &rest params) &body body)
   `(let ,(loop for name in params
                collect (list name (ecase method
-                                    (:get `(get-parameter ,(string-downcase (symbol-name name))))
-                                    (:post `(post-parameter ,(string-downcase (symbol-name name)))))))
+                                    (:get `(hunchentoot:get-parameter ,(string-downcase (symbol-name name))))
+                                    (:post `(hunchentoot:post-parameter ,(string-downcase (symbol-name name)))))))
      ,@body))
 
 ;;; SQL utils

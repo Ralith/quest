@@ -9,4 +9,4 @@
           (if (validate-user name password)
               "Login success!"
               "Invalid credentials")
-          (handle-static-file page)))))
+          (hunchentoot:handle-static-file page)))))
