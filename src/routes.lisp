@@ -31,4 +31,4 @@
 (setf (symbol-function 'routes-dispatcher)
       (create-route-dispatcher *route-map*))
 
-(setf *dispatch-table* (list 'routes-dispatcher #'hunchentoot:default-dispatcher))
+(setf hunchentoot:*dispatch-table* (list 'routes-dispatcher #'hunchentoot:default-dispatcher))
