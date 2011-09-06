@@ -38,4 +38,4 @@
 (defun drop-table (symbol)
   (query (format nil "drop table if exists ~A" (sql-compile symbol))))
 (defun drop-all-tables ()
-  (map nil (compose #'drop-table #'car) pomo::*tables*))
+  (map nil (compose #'drop-table #'car) (reverse pomo::*tables*)))
