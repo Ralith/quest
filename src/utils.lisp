@@ -1,8 +1,12 @@
 (in-package :quest)
 
 ;;; Random
-(defun random-data (length)
-  (map-into (make-array length :element-type '(unsigned-byte 8)) (curry #'random 256)))
+(defun random-data (length &aux (buffer (make-array length :element-type '(unsigned-byte 8))))
+  #+unix
+  (with-open-file (s "/dev/urandom" :element-type '(unsigned-byte 8))
+    (read-sequence buffer s))
+  #-unix (map-into buffer (curry #'random 256)) ; TODO: Better randomness on nonunix
+  buffer)
 
 ;;; Hunchentoot
 (defmacro with-params ((method &rest params) &body body)
