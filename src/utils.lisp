@@ -1,5 +1,9 @@
 (in-package :quest)
 
+;;; Random
+(defun random-data (length)
+  (map-into (make-array length :element-type '(unsigned-byte 8)) (curry #'random 256)))
+
 ;;; Hunchentoot
 (defmacro with-params ((method &rest params) &body body)
   `(let ,(loop for name in params

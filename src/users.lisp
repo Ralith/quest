@@ -34,10 +34,7 @@
    salt
    iterations (ironclad:digest-length digest)))
 
-(defun gensalt (length)
-  (map-into (make-array length :element-type '(unsigned-byte 8)) (curry #'random 256)))
-
-(defun add-user (name email password &aux (salt (gensalt 32)))
+(defun add-user (name email password &aux (salt (random-data 32)))
   (make-dao 'user :name name :email email
                   :iterations +hash-iterations+
                   :salt salt
