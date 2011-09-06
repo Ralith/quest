@@ -1,3 +1,3 @@
 (defpackage #:quest
-  (:use #:cl #:html-template #:hunchentoot #:postmodern
+  (:use #:cl #:html-template #:postmodern
         #:alexandria #:anaphora))

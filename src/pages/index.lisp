@@ -26,5 +26,5 @@
                                :stream s))))
 
 (defun startup ()
-  (start (make-instance 'hunchentoot:acceptor :port 8080))
+  (hunchentoot:start (make-instance 'hunchentoot:acceptor :port 8080))
   (connect-toplevel "quest" "ralith" nil "localhost"))
