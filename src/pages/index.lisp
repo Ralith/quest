@@ -21,9 +21,9 @@
                                             :date ,(created update)
                                             :body ,(body update)))))))
     (with-output-to-string (s)
-      (fill-and-print-template (find-template "index")
-                               (list
-                                :user-name (let ((session (hunchentoot:session hunchentoot:*request*)))
-                                             (and session (name (get-dao 'user (user-id session)))))
-                                :quests values)
-                               :stream s))))
+      (template:fill-and-print-template
+       (find-template "index")
+       (list :user-name (let ((session (hunchentoot:session *request*)))
+                          (and session (name (get-dao 'user (user-id session)))))
+             :quests values)
+       :stream s))))

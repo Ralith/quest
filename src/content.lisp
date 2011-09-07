@@ -15,6 +15,7 @@
      (created :col-type :timestamp-with-time-zone :col-default (:now) :reader created))
   (:keys id)
   (:foreign-key content parent-id id))
+(closer-mop:finalize-inheritance (find-class 'content))
 
 (macrolet ((def-get-dao (type)
              (let ((type-name (string-downcase (symbol-name type))))
@@ -43,6 +44,32 @@
                 'created)
      (id chapter))
     (:dao content))
+
+(let ((query (concatenate 'string "
+WITH RECURSIVE content_subtree AS (
+    -- Base case
+    SELECT $2::integer AS \"depth\", * FROM content WHERE parent_id = $1
+
+    UNION ALL
+
+    -- recursive term
+    SELECT content_subtree.depth - 1 AS \"depth\", content.*
+    FROM content
+    JOIN content_subtree
+    ON (content.parent_id = content_subtree.id)
+    WHERE content_subtree.depth > 0
+)
+SELECT " (format nil "~{~A~^, ~}" (mapcar #'car (pomo::dao-column-map (find-class 'content)))) "
+FROM content_subtree
+ORDER BY created")))
+  (defprepared-with-names content-subtree-desc (content depth)
+     ((concatenate 'string query " DESC")
+      (id content) depth)
+     (:dao content))
+  (defprepared-with-names content-subtree-asc (content depth)
+     ((concatenate 'string query " ASC")
+      (id content) depth)
+     (:dao content)))
 
 (defprepared-with-names chapters (quest)
     ((:order-by (:select :* :from 'content :where (:and (:= 'type "chapter")
