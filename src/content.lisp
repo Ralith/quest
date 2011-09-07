@@ -6,6 +6,10 @@
     ((id :col-type serial :reader id)
      (type :col-type :content_type :initarg :type :reader content-type)
      (parent-id :col-type (or integer db-null) :initarg :parent-id :reader parent-id)
+     (ordinal :col-type (or integer db-null) :initarg :ordinal :reader ordinal
+              :documentation "Position of the content amongst its siblings")
+     (child-count :col-type integer :col-default 0 :reader child-count
+                  :documentation "Number of logical children had by the content (ignoring 1:1 relationships)")
      (user-id :col-type (or integer db-null) :initarg :user-id :reader user-id)
      (address :col-type inet :initarg :address :reader address)
      (title :col-type (or text db-null) :initarg :title :accessor title)
@@ -16,6 +20,18 @@
   (:keys id)
   (:foreign-key content parent-id id))
 (closer-mop:finalize-inheritance (find-class 'content))
+
+(defprepared-with-names alloc-ordinal (parent)
+    ((:update 'content :set 'child-count (:+ 1 'child-count) :where (:= 'id :$1)
+                                                             :returning 'child-count)
+     (id parent))
+    :single)
+
+(defprepared-with-names find-child (parent ordinal)
+    ((:select :* :from 'content :where (:and (:= 'parent-id :$1)
+                                             (:= 'ordinal :$2)))
+     (id parent) ordinal)
+    (:dao content :single))
 
 (macrolet ((def-get-dao (type)
              (let ((type-name (string-downcase (symbol-name type))))
