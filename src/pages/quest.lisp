@@ -20,7 +20,7 @@
              :chapters chapters)
        :stream s))))
 
-(defroute quest "/quest/:id/feed"
+(defroute quest-feed "/quest/:id/feed"
   (let* ((quest (get-dao 'quest (parse-integer id :radix 36)))
          (base-url (format nil "http://~A/quest/~A" (host) id))
          (link (format nil "~A/feed" base-url)))
@@ -32,6 +32,7 @@
                       (:|atom:link| :href (escape-string link) :rel "self" :type "application/rss+xml")
                       (when (stringp (body quest))
                         (htm (:description (esc (body quest)))))
+                      ;; TODO: Respect suggestion/update associations.
                       (loop for update in (content-subtree-desc quest 1)
                             do (htm (:item (when (stringp (title update))
                                              (htm (:title (esc (title update)))))
