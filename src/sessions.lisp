@@ -1,7 +1,7 @@
 (in-package :quest)
 
-;;; Milliseconds
-(defparameter +session-timeout+ (truncate 6.048e+08))
+;;; Days
+(defparameter +session-timeout+ 7)
 
 (defdao session ()
     ((id :col-type bytea :reader id :initform (random-data 16))
@@ -27,10 +27,10 @@
                  (hunchentoot:get-parameter (hunchentoot:session-cookie-name hunchentoot:*acceptor*)
                                             request)))
          (session (and id (get-dao 'session (base64-string-to-usb8-array id :uri t))))
-         (now (simple-date:universal-time-to-timestamp (get-universal-time))))
+         (now (universal-to-timestamp (get-universal-time))))
     (when session
-      (if (and (simple-date:time> (simple-date:time-add (last-activity session) +session-timeout+)
-                                  now)
+      (if (and (timestamp> (timestamp+ (last-activity session) +session-timeout+ :day)
+                           now)
                (string= (hunchentoot:real-remote-addr request)
                         (remote-addr session)))
           (progn (setf (last-activity session) now)
