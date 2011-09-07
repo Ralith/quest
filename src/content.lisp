@@ -27,11 +27,16 @@
      (id parent))
     :single)
 
-(defprepared-with-names find-child (parent ordinal)
+(defprepared-with-names %find-child (parent ordinal)
     ((:select :* :from 'content :where (:and (:= 'parent-id :$1)
                                              (:= 'ordinal :$2)))
      (id parent) ordinal)
     (:dao content :single))
+
+(defun find-child (parent &rest ordinals)
+  (if (first ordinals)
+      (apply 'find-child (%find-child parent (first ordinals)) (rest ordinals))
+      parent))
 
 (macrolet ((def-get-dao (type)
              (let ((type-name (string-downcase (symbol-name type))))
