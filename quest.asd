@@ -11,8 +11,7 @@
              (:file "routes")
              (:file "templates")
              (:file "users")
-             (:file "quests")
-             (:file "posts")
+             (:file "content")
              (:file "sessions")
              (:file "random-art")
              (:module "pages"

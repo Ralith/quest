@@ -4,8 +4,8 @@
 
 ;;; TODO: Most recently updated
 (defprepared-with-names frontpage-quests (count)
-    ((:limit (:select :* :from 'quest) :$1) count)
-    (:dao quest))
+    ((:limit (:select :* :from 'content :where (:= 'type "quest")) :$1) count)
+    (:dao content))
 
 (defroute frontpage "/"
   (let ((values (loop for quest in (frontpage-quests 10)
@@ -15,12 +15,11 @@
                         :quest-id ,(write-to-string (id quest) :base 36)
                         :chapter-title ,(title chapter)
                         :posts
-                        ,(loop for update in (updates-of chapter)
-                               for post = (get-dao 'post (post-id update))
-                               collecting `(:post-title ,(title post)
-                                            :author ,(name (get-dao 'user (user-id post)))
-                                            :date ,(created post)
-                                            :body ,(body post)))))))
+                        ,(loop for update in (updates chapter)
+                               collecting `(:post-title ,(title update)
+                                            :author ,(name (get-dao 'user (user-id update)))
+                                            :date ,(created update)
+                                            :body ,(body update)))))))
     (with-output-to-string (s)
       (fill-and-print-template (find-template "index")
                                (list
