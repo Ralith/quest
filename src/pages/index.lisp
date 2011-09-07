@@ -27,7 +27,3 @@
                                              (and session (name (get-dao 'user (user-id session)))))
                                 :quests values)
                                :stream s))))
-
-(defun startup ()
-  (hunchentoot:start (make-instance 'hunchentoot:acceptor :port 8080))
-  (connect-toplevel "quest" "ralith" nil "localhost"))

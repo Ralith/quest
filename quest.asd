@@ -14,6 +14,7 @@
              (:file "content")
              (:file "sessions")
              (:file "random-art")
+             (:file "setup")
              (:module "pages"
                       :serial t
                       :components
