@@ -1,7 +1,5 @@
 (in-package #:quest)
 
-(defparameter *root-url* "http://localhost:8080/")
-
 (defclass quest-acceptor (hunchentoot:acceptor) ())
 
 (defmethod hunchentoot:session-cookie-name ((acceptor quest-acceptor))

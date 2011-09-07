@@ -21,8 +21,9 @@
        :stream s))))
 
 (defroute quest "/quest/:id/feed"
-  (let ((quest (get-dao 'quest (parse-integer id :radix 36)))
-        (link (format nil "~Aquest/~A/feed" *root-url* id)))
+  (let* ((quest (get-dao 'quest (parse-integer id :radix 36)))
+         (base-url (format nil "http://~A/quest/~A" (host) id))
+         (link (format nil "~A/feed" base-url)))
     (setf (content-type*) "application/rss+xml")
     (with-html-output-to-string (s)
       (:rss :version "2.0" :|xmlns:atom| "http://www.w3.org/2005/Atom"
@@ -34,7 +35,7 @@
                       (loop for update in (content-subtree-desc quest 1)
                             do (htm (:item (when (stringp (title update))
                                              (htm (:title (esc (title update)))))
-                                           (:link (fmt "~Aquest/~A#~A" *root-url* id
-                                                           (write-to-string (id update) :base 36)))
+                                           (:link (fmt "~A#~A" base-url
+                                                       (write-to-string (id update) :base 36)))
                                            (when (stringp (body update))
                                              (htm (:description (esc (body update)))))))))))))
