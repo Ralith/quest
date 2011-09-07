@@ -5,4 +5,4 @@
   (:shadowing-import-from #:cl-who #:escape-string-all))
 
 ;;; Where else to put this?
-(set-local-time-cl-postgres-readers)
+(local-time:set-local-time-cl-postgres-readers)
