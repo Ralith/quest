@@ -1,6 +1,6 @@
 (asdf:defsystem quest
   :serial t
-  :depends-on (#:hunchentoot #:html-template #:parenscript #:cl-postgres+local-time #:postmodern #:alexandria #:anaphora #:routes #:ironclad #:zpng #:cffi #:cl-base64 #:cl-who #:closer-mop)
+  :depends-on (#:hunchentoot #:html-template #:parenscript #:cl-postgres+local-time #:postmodern #:alexandria #:anaphora #:routes #:ironclad #:zpng #:cffi #:cl-base64 #:cxml #:closer-mop)
   :components
   ((:module "src"
             :serial t

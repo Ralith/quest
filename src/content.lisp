@@ -38,6 +38,11 @@
             (subst nil :null (title o))
             (id o))))
 
+(defun last-modified (content &aux (edited (edited content)))
+  (if (eq edited :null)
+      (created content)
+      edited))
+
 (defprepared-with-names updates (chapter)
     ((:order-by (:select :* :from 'content :where (:and (:= 'type "update")
                                                         (:= 'parent-id :$1)))
