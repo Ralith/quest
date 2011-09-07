@@ -39,28 +39,34 @@
         ("lastBuildDate" () ,(escape-for-html (to-rfc1123-timestring (last-modified quest))))
         ("generator" () "Quest")
         ,@(loop for chapter in (chapters quest)
-                for chapter-number from 1 append
+                for chapter-number from 1
+                for link = (escape-for-html (format nil "~A#c~D" base-url chapter-number))
+                append
                 `(("item"
                    ()
                    ("title" () ,(if (stringp (title chapter))
                                     (escape-for-html (title chapter))
                                     (format nil "Chapter ~D" chapter-number)))
-                   ("link" () ,(escape-for-html (format nil "~A#c~D" base-url chapter-number)))
+                   ("link" () ,link)
+                   ("guid" () ,link)
                    ("description" () ,(if (stringp (body chapter))
                                           (escape-for-html (body chapter))
                                           (format nil "The ~:R chapter of ~A"
                                                   chapter-number (title quest))))
                    ("pubDate" () ,(escape-for-html (to-rfc1123-timestring (created chapter)))))
                   ,@(loop for update in (updates chapter)
-                          for update-number from 1 collect
+                          for update-number from 1
+                          for link = (escape-for-html (format nil "~A#c~Du~D"
+                                                              base-url chapter-number update-number))
+                          collect
                           `("item"
                             ()
                             ("title" () ,(if (stringp (title update))
                                              (escape-for-html (title update))
                                              (format nil "Chapter ~D, update ~D"
                                                      chapter-number update-number)))
-                            ("link" () ,(escape-for-html (format nil "~A#c~Du~D"
-                                                                 base-url chapter-number update-number)))
+                            ("link" () ,link)
+                            ("guid" () ,link)
                             ("description" () ,(if (stringp (body update))
                                                    (escape-for-html (body update))
                                                    (format nil "The ~:R update of the ~:R chapter of ~A"
