@@ -1,7 +1,8 @@
 (in-package #:quest)
 
 (defroute quest "/quest/:id"
-  (let* ((quest (get-dao 'quest (parse-integer id :radix 36)))
+  ;; TODO: Don't hardcode ID of board
+  (let* ((quest (find-child (get-dao 'board 1) (parse-integer id :radix 36)))
          (chapters
            (loop for chapter in (chapters quest)
                  collecting
@@ -21,7 +22,8 @@
        :stream s))))
 
 (defroute quest-feed "/quest/:id/feed"
-  (let* ((quest (get-dao 'quest (parse-integer id :radix 36)))
+  ;; TODO: Don't hardcode ID of board
+  (let* ((quest (find-child (get-dao 'board 1) (parse-integer id :radix 36)))
          (base-url (format nil "http://~A/quest/~A" (host) id)))
     (setf (content-type*) "application/rss+xml")
     (cxml-xmls:map-node

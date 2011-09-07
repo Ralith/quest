@@ -12,7 +12,7 @@
                       for chapter = (latest-chapter quest)
                       collecting
                       `(:quest-title ,(title quest)
-                        :quest-id ,(write-to-string (id quest) :base 36)
+                        :quest-id ,(write-to-string (ordinal quest) :base 36)
                         :chapter-title ,(title chapter)
                         :posts
                         ,(loop for update in (updates chapter)
