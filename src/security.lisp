@@ -8,12 +8,10 @@
      (reason :col-type text :initarg :reason :accessor reason))
   (:keys id))
 
-(defmethod print-object ((o content) s)
+(defmethod print-object ((o ban) s)
   (print-unreadable-object (o s :type t)
-    (format s ""
-            (string-upcase (content-type o))
-            (subst nil :null (title o))
-            (id o))))
+    (format s "~A~@[ until ~A~]"
+            (address o) (subst nil :null (expiration o)))))
 
 (defmacro with-ban-check (address &body body)
   (with-gensyms (ban)
