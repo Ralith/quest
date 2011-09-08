@@ -21,13 +21,14 @@
 (defmethod hunchentoot:session-cookie-value ((session session))
   (usb8-array-to-base64-string (id session) :uri t))
 
+;;; TODO: Change session ID occasionally to annoy spoofers.
 (defmethod hunchentoot:session-verify ((request hunchentoot:request))
   (let* ((id (or (hunchentoot:cookie-in (hunchentoot:session-cookie-name hunchentoot:*acceptor*)
                                         request)
                  (hunchentoot:get-parameter (hunchentoot:session-cookie-name hunchentoot:*acceptor*)
                                             request)))
          (session (and id (get-dao 'session (base64-string-to-usb8-array id :uri t))))
-         (now (universal-to-timestamp (get-universal-time))))
+         (now (now)))
     (when session
       (if (and (timestamp> (timestamp+ (last-activity session) +session-timeout+ :day)
                            now)

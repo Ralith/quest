@@ -19,8 +19,8 @@
   (with-gensyms (ban)
    `(let ((,ban (get-dao 'ban ,address)))
       (if (and ban (timestamp> (expiration ban) (now)))
-       (concatenate 'string "You are banned: " (reason ,ban))
-       (progn ,@body)))))
+          (concatenate 'string "You are banned: " (reason ,ban))
+          (progn ,@body)))))
 
 (defun user-level> (a b)
   (or (and (string= a "admin")
