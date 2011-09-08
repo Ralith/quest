@@ -18,6 +18,8 @@
              (:module "pages"
                       :serial t
                       :components
-                      ((:file "index")
+                      ((:file "login")
+                       (:file "register")
+                       (:file "index")
                        (:file "quest")
                        (:file "art")))))))
