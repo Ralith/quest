@@ -18,7 +18,7 @@
 (defmacro with-ban-check (address &body body)
   (with-gensyms (ban)
    `(let ((,ban (get-dao 'ban ,address)))
-      (if (and ban (timestamp> (expiration ban) (now)))
+      (if (and ,ban (timestamp> (expiration ,ban) (now)))
           (concatenate 'string "You are banned: " (reason ,ban))
           (progn ,@body)))))
 
