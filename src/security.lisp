@@ -1,11 +1,12 @@
 (in-package #:quest)
 
 (defdao ban ()
-    ((address :col-type :inet :initarg :address :accessor address)
+    ((id :col-type serial :reader id)
+     (address :col-type inet :initarg :address :accessor address)
      (created :col-type :timestamp-with-time-zone :col-default (:now) :reader created)
-     (duration :col-type (or interval db-null) :initarg :duration :accessor duration)
+     (expiration :col-type (or :timestamp-with-time-zone db-null) :initarg :expiration :accessor expiration)
      (reason :col-type text :initarg :reason :accessor reason))
-  (:keys address))
+  (:keys id))
 
 (defmethod print-object ((o content) s)
   (print-unreadable-object (o s :type t)
@@ -16,9 +17,10 @@
 
 (defmacro with-ban-check (address &body body)
   (with-gensyms (ban)
-   `(if-let (,ban (get-dao 'ban ,address))
-      (concatenate 'string "You are banned: " (reason ,ban))
-      (progn ,@body))))
+   `(let ((,ban (get-dao 'ban ,address)))
+      (if (and ban (timestamp> (expiration ban) (now)))
+       (concatenate 'string "You are banned: " (reason ,ban))
+       (progn ,@body)))))
 
 (defun user-level> (a b)
   (or (and (string= a "admin")
