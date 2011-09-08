@@ -7,9 +7,11 @@
            (loop for chapter in (chapters quest)
                  collecting
                  (list :chapter-title (title chapter)
+                       :chapter-ordinal (ordinal chapter)
                        :updates
                        (loop for update in (updates chapter)
-                             collecting (list :update-title (title update)
+                             collecting (list :update-ordinal (ordinal update)
+                                              :update-title (title update)
                                               :author (name (get-dao 'user (user-id update)))
                                               :date (created update)
                                               :body (body update)))))))
@@ -42,7 +44,7 @@
         ("generator" () "Quest")
         ,@(loop for chapter in (chapters quest)
                 for chapter-number from 1
-                for link = (escape-for-html (format nil "~A#c~D" base-url chapter-number))
+                for link = (escape-for-html (format nil "~A#~D" base-url chapter-number))
                 append
                 `(("item"
                    ()

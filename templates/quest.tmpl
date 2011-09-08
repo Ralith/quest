@@ -10,13 +10,15 @@
     <small><!-- TMPL_VAR author --></small>
     <!-- TMPL_LOOP chapters -->
     <hr />
-    <h4><!-- TMPL_VAR chapter-title --></h4>
+    <a id="<!-- TMPL_VAR chapter-ordinal -->"><h4><!-- TMPL_VAR chapter-title --></h4></a>
     <!-- TMPL_LOOP updates -->
-    <!-- TMPL_IF update-title -->
-    <h5><!-- TMPL_VAR update-title --></h5>
-    <!-- /TMPL_IF -->
-    <small><!-- TMPL_VAR author --></small>
-    <small><!-- TMPL_VAR date --></small>
+    <a id="<!-- TMPL_VAR chapter-ordinal -->/<!-- TMPL_VAR update-ordinal -->">
+      <!-- TMPL_IF update-title -->
+      <h5><!-- TMPL_VAR update-title --></h5>
+      <!-- /TMPL_IF -->
+      <small><!-- TMPL_VAR author --></small>
+      <small><!-- TMPL_VAR date --></small>
+    </a>
     <p><!-- TMPL_VAR body --></p>
     <!-- /TMPL_LOOP -->
     <!-- /TMPL_LOOP -->
