@@ -6,8 +6,9 @@
   (defroute register "/register"
     (with-params (:post name email password)
       (if (and name email password)
-          (if (find-user name)
-              "That user already exists!"
-              (progn (start-session (add-user name email password))
-                     (format nil "Welcome, ~A!  You have been registered." name)))
+          (with-ban-check (real-remote-addr)
+            (if (find-user name)
+                "That user already exists!"
+                (progn (start-session (add-user name email password))
+                       (format nil "Welcome, ~A!  You have been registered." name))))
           (hunchentoot:handle-static-file page)))))

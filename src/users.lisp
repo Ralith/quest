@@ -8,6 +8,7 @@
            :initform (error "Users must be named"))
      (email :col-type text :initarg :email :accessor email
             :initform (error "Users must have an email"))
+     (level :col-type :user_level :col-default "user" :initarg :level :accessor level)
      (iterations :col-type integer :initarg :iterations :accessor iterations
                  :initform (error "Users must have a hash iteration count")
                  :documentation "Number of iterations used for PBKDF2-SHA512")
@@ -34,8 +35,12 @@
    salt
    iterations (ironclad:digest-length digest)))
 
-(defun add-user (name email password &aux (salt (random-data 32)))
+(defun add-user (name email password &optional (level :user) &aux (salt (random-data 32)))
   (make-dao 'user :name name :email email
+                  :level (ecase level
+                           (:user "user")
+                           (:mod "mod")
+                           (:admin "admin"))
                   :iterations +hash-iterations+
                   :salt salt
                   :password (hash-password password salt +hash-iterations+)))

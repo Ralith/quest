@@ -31,7 +31,7 @@
     (when session
       (if (and (timestamp> (timestamp+ (last-activity session) +session-timeout+ :day)
                            now)
-               (string= (hunchentoot:real-remote-addr request)
+               (string= (real-remote-addr request)
                         (remote-addr session)))
           (progn (setf (last-activity session) now)
                  (update-dao session)

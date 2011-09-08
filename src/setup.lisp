@@ -6,9 +6,12 @@
   "quest.sid")
 
 (defun init-db ()
-  (execute (:create-enum :content_type
-                         ("board" "quest" "chapter" "discussion" "update" "suggestion" "post")))
-  (create-all-tables))
+  (with-transaction (initialization)
+    (execute (:create-enum :user_level
+                           ("admin" "mod" "user")))
+    (execute (:create-enum :content_type
+                           ("board" "quest" "chapter" "discussion" "update" "suggestion" "post")))
+    (create-all-tables)))
 
 (defun start ()
   (hunchentoot:start (make-instance 'quest-acceptor :port 8080))

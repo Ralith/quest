@@ -10,6 +10,7 @@
              (:file "utils")
              (:file "routes")
              (:file "templates")
+             (:file "security")
              (:file "users")
              (:file "content")
              (:file "sessions")
