@@ -20,12 +20,15 @@
       (concatenate 'string "You are banned: " (reason ,ban))
       (progn ,@body))))
 
-(defun user> (a b &aux (alevel (level a)) (blevel (level b)))
-  (or (and (string= alevel "admin")
-           (or (string= blevel "user")
-               (string= blevel "mod")))
-      (and (string= alevel "mod")
-           (string= blevel "user"))))
+(defun user-level> (a b)
+  (or (and (string= a "admin")
+           (or (string= b "mod")
+               (user-level> "mod" b)))
+      (and (string= a "mod")
+           (string= b "user"))))
+
+(defun user> (a b)
+  (user-level> (level a) (level b)))
 
 (defun can-edit? (user content)
   (or (= (id user) (user-id content))

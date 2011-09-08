@@ -53,7 +53,7 @@
   (def-get-dao post))
 
 (defmethod print-object ((o content) s)
-  (print-unreadable-object (o s )
+  (print-unreadable-object (o s)
     (format s "~A ~@[~A ~]{~A}"
             (string-upcase (content-type o))
             (subst nil :null (title o))
