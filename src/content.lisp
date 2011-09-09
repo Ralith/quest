@@ -74,16 +74,16 @@
 (let ((query (concatenate 'string "
 WITH RECURSIVE content_subtree AS (
     -- Base case
-    SELECT $2::integer AS \"depth\", * FROM content WHERE parent_id = $1
+    SELECT $2::integer AS \"content_subtree_depth\", * FROM content WHERE parent_id = $1
 
     UNION ALL
 
     -- recursive term
-    SELECT content_subtree.depth - 1 AS \"depth\", content.*
+    SELECT content_subtree.content_subtree_depth - 1 AS \"content_subtree_depth\", content.*
     FROM content
     JOIN content_subtree
     ON (content.parent_id = content_subtree.id)
-    WHERE content_subtree.depth > 0
+    WHERE content_subtree.content_subtree_depth > 0
 )
 SELECT " (format nil "~{~A~^, ~}" (mapcar #'car (pomo::dao-column-map (find-class 'content)))) "
 FROM content_subtree
