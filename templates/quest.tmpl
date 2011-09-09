@@ -3,32 +3,28 @@
 <html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
   <head>
     <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-  <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
     <title><!-- TMPL_VAR quest-title --></title>
   </head>
   <body>
-	
-	<h1><!-- TMPL_VAR quest-title --></h1>
-	
-	<div id="questHeader">
-		<span class="authorID"><!-- TMPL_VAR author --></span>
-		<img src="quest.jpg" class="questImage" />
-		<p class="questSummary">
-			Suspendisse potenti. Nullam accumsan dignissim mattis. Pellentesque congue, dolor vitae porttitor euismod, mauris nulla consectetur nibh, sed aliquam tellus turpis quis felis. Morbi risus magna, euismod a consequat placerat, convallis vel nulla. Morbi sed erat ipsum, eget imperdiet ante. Curabitur eleifend mi sed justo malesuada eu rhoncus odio auctor. Donec a ante ac nibh vehicula varius a eu dui. Cras nec odio eget ligula blandit commodo. Donec tristique sem et dui interdum nec condimentum nisi tincidunt. Pellentesque metus magna, imperdiet at vulputate tempor, tristique a sem.
-		</p>
-	</div>
-	
-	<div id="chapterList">
-    <!-- TMPL_LOOP chapters -->
-		<div class="chapterListItem">
-			<a href="chapter.html" class="chapterTitle" id="<!-- TMPL_VAR chapter-ordinal -->" >CHAPTER TITLE</a>
-			<img src="chapter.jpg" class="chapterImage" />
-			<p class="chapterSummary">
-				Suspendisse potenti. Nullam accumsan dignissim mattis. Pellentesque congue, dolor vitae porttitor euismod, mauris nulla consectetur nibh, sed aliquam tellus turpis quis felis. Morbi risus magna, euismod a consequat placerat, convallis vel nulla. Morbi sed erat ipsum, eget imperdiet ante. Curabitur eleifend mi sed justo malesuada eu rhoncus odio auctor. Donec a ante ac nibh vehicula varius a eu dui. Cras nec odio eget ligula blandit commodo. Donec tristique sem et dui interdum nec condimentum nisi tincidunt. Pellentesque metus magna, imperdiet at vulputate tempor, tristique a sem.
-			</p>
-		</div>
-		<!-- /TMPL_LOOP -->
-	</div>
-	
+    <h1><!-- TMPL_VAR quest-title --></h1>
+    <div id="questHeader">
+      <span class="authorID"><!-- TMPL_VAR author --></span>
+      <img src="quest.jpg" class="questImage" />
+      <p class="questSummary">
+        <!-- TMPL_VAR quest-summary -->
+      </p>
+    </div>
+    <div id="chapterList">
+      <!-- TMPL_LOOP chapters -->
+      <div class="chapterListItem">
+	<a href="chapter.html" class="chapterTitle" id="<!-- TMPL_VAR chapter-ordinal -->" ><!-- TMPL_VAR chapter-title --></a>
+	<img src="chapter.jpg" class="chapterImage" />
+	<p class="chapterSummary">
+          <!-- TMPL_VAR chapter-summary -->
+	</p>
+      </div>
+      <!-- /TMPL_LOOP -->
+    </div>
   </body>
 </html>

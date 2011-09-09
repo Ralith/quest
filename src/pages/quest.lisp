@@ -2,25 +2,18 @@
 
 (defroute quest "/quest/:id"
   ;; TODO: Don't hardcode ID of board
-  (let* ((quest (find-child (get-dao 'board 1) (parse-integer id :radix 36)))
-         (chapters
-           (loop for chapter in (chapters quest)
-                 collecting
-                 (list :chapter-title (title chapter)
-                       :chapter-ordinal (ordinal chapter)
-                       :updates
-                       (loop for update in (updates chapter)
-                             collecting (list :update-ordinal (ordinal update)
-                                              :update-title (title update)
-                                              :author (name (get-dao 'user (user-id update)))
-                                              :date (created update)
-                                              :body (body update)))))))
+  (let* ((quest (find-child (get-dao 'board 1) (parse-integer id :radix 36))))
     (with-output-to-string (s)
       (template:fill-and-print-template
        (find-template "quest")
-       (list :quest-title (title quest) 
+       (list :quest-title (title quest)
+             :quest-summary (body quest)
              :author (name (get-dao 'user (user-id quest)))
-             :chapters chapters)
+             :chapters (loop for chapter in (chapters quest)
+                             collecting
+                             (list :chapter-title (title chapter)
+                                   :chapter-ordinal (ordinal chapter)
+                                   :chapter-summary (body chapter))))
        :stream s))))
 
 (defroute quest-feed "/quest/:id/feed"
