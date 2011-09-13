@@ -15,10 +15,13 @@
      (title :col-type (or text db-null) :initarg :title :accessor title)
      (alias :col-type (or text db-null) :initarg :alias :accessor alias)
      (body :col-type (or text db-null) :initarg :body :accessor body)
+     (thumbnail :col-type (or text db-null) :initarg :thumbnail :accessor thumbnail
+                :documentation "Name of media to be displayed with item in indexes")
      (edited :col-type (or :timestamp-with-time-zone db-null) :accessor edited)
      (created :col-type :timestamp-with-time-zone :col-default (:now) :reader created))
   (:keys id)
-  (:foreign-key content parent-id id))
+  (:foreign-key content parent-id id)
+  (:unique parent ordinal))
 (closer-mop:finalize-inheritance (find-class 'content))
 
 (defprepared-with-names alloc-ordinal (parent)
