@@ -19,9 +19,9 @@
 
 (defun make-quest (author address board
                    &key (alias :null)
-                     (quest-title "???") (quest-thumbnail :null) quest-media
-                     (chapter-title :null) (chapter-thumbnail :null) chapter-media
-                     (update-title :null) (update-thumbnail :null) (body :null) update-media)
+                     (quest-title "???") (quest-thumbnail :null) (quest-summary :null) quest-media
+                     (chapter-title :null) (chapter-thumbnail :null) (chapter-summary :null) chapter-media
+                     (update-title :null) (update-thumbnail :null) (update-body :null) update-media)
   (with-transaction (make-quest)
     (let* ((quest (make-dao 'quest
                             :parent-id (id board)
@@ -30,14 +30,16 @@
                             :address address
                             :title quest-title
                             :alias alias
-                            :thumbnail quest-thumbnail))
+                            :thumbnail quest-thumbnail
+                            :body quest-summary))
            (chapter (make-dao 'chapter
                               :parent-id (id quest)
                               :ordinal (alloc-ordinal quest)
                               :user-id (id author)
                               :title chapter-title
                               :alias alias
-                              :thumbnail chapter-thumbnail))
+                              :thumbnail chapter-thumbnail
+                              :body chapter-summary))
            (update (make-dao 'update
                              :parent-id (id chapter)
                              :ordinal (alloc-ordinal chapter)
@@ -46,8 +48,8 @@
                              :title update-title
                              :alias alias
                              :thumbnail update-thumbnail
-                             :body body)))
-      (make-dao 'discussionp
+                             :body update-body)))
+      (make-dao 'discussion
                 :parent-id (id quest)
                 :user-id (id author)
                 :address address)
