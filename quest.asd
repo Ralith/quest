@@ -13,6 +13,7 @@
              (:file "security")
              (:file "users")
              (:file "content")
+             (:file "media")
              (:file "sessions")
              (:file "random-art")
              (:file "setup")
