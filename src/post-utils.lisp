@@ -24,8 +24,8 @@
         (complete nil))
     (unwind-protect
          (progn
-           (mapc (curry (lambda (x) (push x stored))
-                        (curry 'apply 'store-media content))
+           (mapc (compose (lambda (x) (push x stored))
+                          (curry 'apply 'store-media content))
                  media)
            (setf complete t))
       (unless complete
