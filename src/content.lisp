@@ -21,7 +21,8 @@
      (created :col-type :timestamp-with-time-zone :col-default (:now) :reader created))
   (:keys id)
   (:foreign-key content parent-id id)
-  (:unique parent ordinal))
+  (:foreign-key media (id thumbnail) (content-id name) :deferrable t :initially-deferred t)
+  (:unique (parent ordinal)))
 ;;; TODO: Make thumbnail a deferrable foreign key reference
 (closer-mop:finalize-inheritance (find-class 'content))
 

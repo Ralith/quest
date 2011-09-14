@@ -6,5 +6,4 @@
      (content-type :col-type text :initarg :content-type :reader content-type)
      (name :col-type text :initarg :name :accessor name)
      (checksum :col-type bytea :initarg :checksum :accessor checksum))
-  (:keys content-id name)
-  (:foreign-key content content-id id))
+  (:keys content-id name))
