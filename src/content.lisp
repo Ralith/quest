@@ -22,6 +22,7 @@
   (:keys id)
   (:foreign-key content parent-id id)
   (:unique parent ordinal))
+;;; TODO: Make thumbnail a deferrable foreign key reference
 (closer-mop:finalize-inheritance (find-class 'content))
 
 (defprepared-with-names alloc-ordinal (parent)
@@ -102,6 +103,22 @@ ORDER BY created")))
      ((concatenate 'string query " ASC")
       (id content) depth)
      (:dao content)))
+
+(defprepared-with-names content-parents (content)
+    ("
+WITH RECURSIVE content_parents AS (
+    SELECT * FROM content WHERE id = $1
+
+    UNION ALL
+
+    SELECT content.*
+    FROM content
+    JOIN content_parents
+    ON (content.id = content_parents.parent_id)
+) SELECT * FROM content_parents
+"
+     (id content))
+    (:dao content))
 
 (defprepared-with-names chapters (quest)
     ((:order-by (:select :* :from 'content :where (:and (:= 'type "chapter")
