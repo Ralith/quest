@@ -6,7 +6,6 @@
             :serial t
             :components
             ((:file "package")
-             (:file "pomo-exts")
              (:file "utils")
              (:file "routes")
              (:file "templates")
