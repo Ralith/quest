@@ -15,6 +15,7 @@
              (:file "content")
              (:file "media")
              (:file "sessions")
+             (:file "post-utils")
              (:file "random-art")
              (:file "setup")
              (:module "pages"
