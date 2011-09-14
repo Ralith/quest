@@ -15,7 +15,9 @@
                     :content-type content-type
                     :name file-name
                     :checksum checksum)
-    (copy-file path (media-path it))))
+    (let ((new-path (media-path it)))
+      (unless (probe-file new-path)
+        (copy-file path new-path)))))
 
 (defun make-quest (author address board
                    &key (alias :null)
