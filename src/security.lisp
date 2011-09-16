@@ -8,17 +8,26 @@
      (reason :col-type text :initarg :reason :accessor reason))
   (:keys id))
 
+(defprepared-with-names find-ban (address)
+    ((:select :* :from 'ban :where (:= 'address :$1))
+     address)
+    (:dao ban))
+
 (defmethod print-object ((o ban) s)
   (print-unreadable-object (o s :type t)
     (format s "~A~@[ until ~A~]"
             (address o) (subst nil :null (expiration o)))))
 
+(defun banned? (address &aux (ban (find-ban address)))
+  (if (and ban (timestamp> (expiration ban) (now)))
+      ban
+      nil))
+
 (defmacro with-ban-check (address &body body)
   (with-gensyms (ban)
-   `(let ((,ban (get-dao 'ban ,address)))
-      (if (and ,ban (timestamp> (expiration ,ban) (now)))
-          (concatenate 'string "You are banned: " (reason ,ban))
-          (progn ,@body)))))
+    `(if-let (,ban (banned? ,address))
+         (concatenate 'string "You are banned: " (reason ,ban))
+         (progn ,@body))))
 
 (defun user-level> (a b)
   (or (and (string= a "admin")
