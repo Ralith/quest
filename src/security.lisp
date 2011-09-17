@@ -4,24 +4,29 @@
     ((id :col-type serial :reader id)
      (address :col-type inet :initarg :address :accessor address)
      (created :col-type :timestamp-with-time-zone :col-default (:now) :reader created)
-     (expiration :col-type (or :timestamp-with-time-zone db-null) :initarg :expiration :accessor expiration)
+     (expiration :col-type :timestamp-with-time-zone :col-default "infinity"
+                 :initarg :expiration :accessor expiration)
      (reason :col-type text :initarg :reason :accessor reason))
   (:keys id))
 
-(defprepared-with-names find-ban (address)
-    ((:select :* :from 'ban :where (:= 'address :$1))
-     address)
+(defprepared-with-names banned? (address &optional (timestamp (now)))
+    ((:select :* :from 'ban :where (:and (:= 'address :$1)
+                                         (:> 'expiration :$2)))
+     address timestamp)
     (:dao ban))
+
+(defun timestamp-infinity? (timestamp)
+  ;;; Experimentally derived values; probably fragile.
+  (and (= (day-of timestamp) 106751931)
+       (= (sec-of timestamp) 14454)
+       (= (nsec-of timestamp) 775807000)))
 
 (defmethod print-object ((o ban) s)
   (print-unreadable-object (o s :type t)
-    (format s "~A~@[ until ~A~]"
-            (address o) (subst nil :null (expiration o)))))
-
-(defun banned? (address &aux (ban (find-ban address)))
-  (if (and ban (timestamp> (expiration ban) (now)))
-      ban
-      nil))
+    (format s "~A (~:[until ~A~;forever~])"
+            (address o)
+            (timestamp-infinity? (expiration o))
+            (expiration o))))
 
 (defmacro with-ban-check (address &body body)
   (with-gensyms (ban)
