@@ -3,24 +3,55 @@
 <html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
   <head>
     <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link href="/static/bootstrap-1.2.0.min.css" rel="stylesheet" />
+
     <title>Quests</title>
   </head>
+  <div class="topbar" style="position: relative;">
+    <div class="fill">
+      <div class="container">
+        <h3><a href="/">Quest</a></h3>
+      </div>
+    </div>
+  </div>
   <body>
-    <!-- TMPL_IF user-name -->
-    Welcome, <!-- TMPL_VAR user-name -->!
-    <!-- /TMPL_IF -->
-    <!-- TMPL_LOOP quests -->
-    <hr />
-    <h3><a href="/quest/<!-- TMPL_VAR quest-id -->"><!-- TMPL_VAR quest-title --></a></h3>
-    <h4><!-- TMPL_VAR chapter-title --></h4>
-    <!-- TMPL_LOOP posts -->
-    <!-- TMPL_IF post-title -->
-    <h5><!-- TMPL_VAR post-title --></h5>
-    <!-- /TMPL_IF -->
-    <small><!-- TMPL_VAR author --></small>
-    <small><!-- TMPL_VAR date --></small>
-    <p><!-- TMPL_VAR body --></p>
-    <!-- /TMPL_LOOP -->
-    <!-- /TMPL_LOOP -->
+    <div class="container">
+      <!-- TMPL_IF user-name -->
+      Welcome, <!-- TMPL_VAR user-name -->!
+      <!-- /TMPL_IF -->
+      <!-- TMPL_LOOP quests -->
+      <hr />
+      <h3><a href="/quest/<!-- TMPL_VAR quest-id -->"><!-- TMPL_VAR quest-title --></a></h3>
+      <h4><!-- TMPL_VAR chapter-title --></h4>
+      <!-- TMPL_LOOP posts -->
+      <!-- TMPL_IF post-title -->
+      <h5><!-- TMPL_VAR post-title --></h5>
+      <!-- /TMPL_IF -->
+      <small><!-- TMPL_VAR author --></small>
+      <small><!-- TMPL_VAR date --></small>
+      <p><!-- TMPL_VAR body --></p>
+      <!-- /TMPL_LOOP -->
+      <!-- /TMPL_LOOP -->
+
+      <div class="pagination">
+        <ul>
+          <li class="prev<!-- TMPL_IF disabled-prev --> disabled<!-- /TMPL_IF -->"><a href="#">&larr; Previous</a></li>
+          <!-- TMPL_LOOP prev-pages -->
+          <li><a href="page/<!-- TMPL_VAR pagenum -->"><!-- TMPL_VAR pagenum --></a></li>
+          <!-- /TMPL_LOOP -->
+          <li class="active"><a href="#"><!-- TMPL_VAR this-page --></a></li>
+          <!-- TMPL_LOOP next-pages -->
+          <li><a href="page/<!-- TMPL_VAR pagenum -->"><!-- TMPL_VAR pagenum --></a></li>
+          <!-- /TMPL_LOOP -->
+          <li class="next<!-- TMPL_IF disabled-next --> disabled<!-- /TMPL_IF -->"><a href="#">Next &rarr;</a></li>
+        </ul>
+      </div>
+    </div>
   </body>
 </html>

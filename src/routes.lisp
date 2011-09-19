@@ -31,4 +31,6 @@
 (setf (symbol-function 'routes-dispatcher)
       (create-route-dispatcher *route-map*))
 
-(setf hunchentoot:*dispatch-table* (list 'routes-dispatcher #'hunchentoot:default-dispatcher))
+(setf hunchentoot:*dispatch-table* (list
+                                    (hunchentoot:create-folder-dispatcher-and-handler "/static/" (asdf:system-relative-pathname :quest "static/"))
+                                    'routes-dispatcher 'hunchentoot:default-dispatcher))

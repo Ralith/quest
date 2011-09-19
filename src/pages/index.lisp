@@ -25,5 +25,8 @@
        (find-template "index")
        (list :user-name (let ((session (hunchentoot:session *request*)))
                           (and session (name (get-dao 'user (user-id session)))))
-             :quests values)
+             :quests values
+             :disabled-prev t
+             :this-page 1
+             :disabled-next t)
        :stream s))))
