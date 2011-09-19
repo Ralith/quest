@@ -19,20 +19,22 @@
       (unless (probe-file new-path)
         (copy-file path new-path)))))
 
-(defun store-media-set (transaction content media)
+(defun store-media-sets (transaction contents media-sets)
   (let ((stored ())
         (complete nil))
     (unwind-protect
          (progn
-           (mapc (compose (lambda (x) (push x stored))
-                          (curry 'apply 'store-media content))
-                 media)
+           (mapc (lambda (content media)
+                   (mapc (compose (lambda (x) (push x stored))
+                                  (curry 'apply 'store-media content))
+                         media))
+                 contents media-sets)
            (setf complete t))
       (unless complete
         (mapc (compose 'delete-file 'media-path) stored)
         (abort-transaction transaction)))))
 
-(defun %make-quest (transaction author address board &key (alias :null) (title "???") (thumbnail :null) (summary :null) media)
+(defun %make-quest (author address board &key (alias :null) (title "???") (thumbnail :null) (summary :null))
   (aprog1 (make-dao 'quest
                     :parent-id (id board)
                     :ordinal (alloc-ordinal board)
@@ -42,37 +44,32 @@
                     :alias alias
                     :thumbnail thumbnail
                     :body summary)
-    (store-media-set transaction it media)
     (make-dao 'discussion
               :parent-id (id it)
               :user-id (id author)
               :address address)))
 
-(defun %make-chapter (transaction author address quest &key (alias :null) (title :null) (thumbnail :null) (summary :null) media)
-  (store-media-set transaction
-                   (make-dao 'chapter
-                             :parent-id (id quest)
-                             :ordinal (alloc-ordinal quest)
-                             :user-id (id author)
-                             :address address
-                             :title title
-                             :alias alias
-                             :thumbnail thumbnail
-                             :body summary)
-                   media))
+(defun %make-chapter (author address quest &key (alias :null) (title :null) (thumbnail :null) (summary :null))
+  (make-dao 'chapter
+            :parent-id (id quest)
+            :ordinal (alloc-ordinal quest)
+            :user-id (id author)
+            :address address
+            :title title
+            :alias alias
+            :thumbnail thumbnail
+            :body summary))
 
-(defun %make-update (transaction author address chapter &key (alias :null) (title :null) (thumbnail :null) (body :null) media)
-  (store-media-set transaction
-                   (make-dao 'update
-                             :parent-id (id chapter)
-                             :ordinal (alloc-ordinal chapter)
-                             :user-id (id author)
-                             :address address
-                             :title title
-                             :alias alias
-                             :thumbnail thumbnail
-                             :body body)
-                   media))
+(defun %make-update (author address chapter &key (alias :null) (title :null) (thumbnail :null) (body :null))
+  (make-dao 'update
+            :parent-id (id chapter)
+            :ordinal (alloc-ordinal chapter)
+            :user-id (id author)
+            :address address
+            :title title
+            :alias alias
+            :thumbnail thumbnail
+            :body body))
 
 (defun make-quest (author address board
                    &key (alias :null)
@@ -80,49 +77,51 @@
                      (chapter-title :null) (chapter-thumbnail :null) (chapter-summary :null) chapter-media
                      (update-title :null) (update-thumbnail :null) (update-body :null) update-media)
   (with-transaction (trans)
-    (let* ((quest (%make-quest trans author address board
+    (let* ((quest (%make-quest author address board
                                :alias alias
                                :title quest-title
                                :thumbnail quest-thumbnail
-                               :summary quest-summary
-                               :media quest-media))
-           (chapter (%make-chapter trans author address quest
+                               :summary quest-summary))
+           (chapter (%make-chapter author address quest
                                    :alias alias
                                    :title chapter-title
                                    :thumbnail chapter-thumbnail
-                                   :summary chapter-summary
-                                   :media chapter-media)))
-      (%make-update trans author address chapter
-                    :alias alias
-                    :title update-title
-                    :thumbnail update-thumbnail
-                    :body update-body
-                    :media update-media))))
+                                   :summary chapter-summary))
+           (update (%make-update author address chapter
+                                 :alias alias
+                                 :title update-title
+                                 :thumbnail update-thumbnail
+                                 :body update-body)))
+      (store-media-sets trans
+                        (list quest chapter update)
+                        (list quest-media chapter-media update-media)))))
 
 (defun append-chapter (author address quest
                        &key (alias :null)
                          (chapter-title :null) (chapter-thumbnail :null) (chapter-summary :null) chapter-media
                          (update-title :null) (update-thumbnail :null) (update-body :null) update-media)
   (with-transaction (trans)
-    (let* ((chapter (%make-chapter trans author address quest
+    (let* ((chapter (%make-chapter author address quest
                                    :alias alias
                                    :title chapter-title
                                    :thumbnail chapter-thumbnail
-                                   :summary chapter-summary
-                                   :media chapter-media)))
-      (%make-update trans author address chapter
-                    :alias alias
-                    :title update-title
-                    :thumbnail update-thumbnail
-                    :body update-body
-                    :media update-media))))
+                                   :summary chapter-summary))
+           (update (%make-update author address chapter
+                                 :alias alias
+                                 :title update-title
+                                 :thumbnail update-thumbnail
+                                 :body update-body)))
+      (store-media-sets trans
+                        (list chapter update)
+                        (list chapter-media update-media)))))
 
 (defun append-update (author address chapter
                       &key (alias :null) (title :null) (thumbnail :null) (body :null) media)
   (with-transaction (trans)
-    (%make-update trans author address chapter
-                  :alias alias
-                  :title title
-                  :thumbnail thumbnail
-                  :body body
-                  :media media)))
+    (store-media-sets trans
+                      (list (%make-update author address chapter
+                                          :alias alias
+                                          :title title
+                                          :thumbnail thumbnail
+                                          :body body))
+                      (list media))))
