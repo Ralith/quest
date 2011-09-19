@@ -4,11 +4,12 @@
 
 (let ((page (merge-pathnames "register.html" *template-dir*)))
   (defroute register "/register"
-    (with-params (:post name email password)
-      (if (and name email password)
-          (with-ban-check (real-remote-addr)
-            (if (find-user name)
-                "That user already exists!"
-                (progn (start-session (add-user name email password))
-                       (format nil "Welcome, ~A!  You have been registered." name))))
-          (hunchentoot:handle-static-file page)))))
+    (ecase (request-method*)
+      (:post
+       (with-params (:post name email password)
+         (with-ban-check (real-remote-addr)
+           (if (find-user name)
+               "That user already exists!"
+               (progn (start-session (add-user name email password))
+                      (format nil "Welcome, ~A!  You have been registered." name))))))
+      (:get (hunchentoot:handle-static-file page)))))

@@ -4,13 +4,14 @@
 
 (let ((page (merge-pathnames "login.html" *template-dir*)))
   (defroute login "/login"
-    (with-params (:post name password)
-      (if (and name password)
-          (if-let (user (validate-user name password))
-            (progn (start-session user)
-                   "Login success!")
-            "Invalid credentials")
-          (hunchentoot:handle-static-file page)))))
+    (ecase (request-method*)
+      (:post
+       (with-params (:post name password)
+         (if-let (user (validate-user name password))
+           (progn (start-session user)
+                  "Login success!")
+           "Invalid credentials")))
+      (:get (hunchentoot:handle-static-file page)))))
 
 (defroute logout "/logout"
   (if (hunchentoot:session hunchentoot:*request*)
