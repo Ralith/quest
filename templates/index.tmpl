@@ -9,7 +9,7 @@
         <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <link href="/static/bootstrap-1.2.0.min.css" rel="stylesheet" />
+    <link href="/static/quest.css" rel="stylesheet" />
 
     <title>Quests</title>
   </head>
@@ -17,14 +17,27 @@
     <div class="fill">
       <div class="container">
         <h3><a href="/">Quest</a></h3>
+        <ul class="nav secondary-nav">
+          <!-- TMPL_IF user-name -->
+          <li><a><!-- TMPL_VAR user-name --></a></li>
+          <li>
+            <form action="/logout" method="POST">
+              <button type="submit" class="btn">Log Out</button>
+            </form>
+          </li>
+          <!-- TMPL_ELSE -->
+          <form action="/login" method="POST">
+            <input type="text" name="name" placeholder="Username" />
+            <input type="password" name="password" placeholder="Password" />
+            <button type="submit" class="btn login">Log In</button>
+          </form>
+          <!-- /TMPL_IF -->
+        </ul>
       </div>
     </div>
   </div>
   <body>
     <div class="container">
-      <!-- TMPL_IF user-name -->
-      Welcome, <!-- TMPL_VAR user-name -->!
-      <!-- /TMPL_IF -->
       <!-- TMPL_LOOP quests -->
       <hr />
       <h3><a href="/quest/<!-- TMPL_VAR quest-id -->"><!-- TMPL_VAR quest-title --></a></h3>
