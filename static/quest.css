@@ -5,13 +5,17 @@
     width: 7em;
 }
 
+.topbar form {
+    margin:2px 0 0 0;
+}
+
 .topbar-inner, .topbar .fill {
     padding: 5px 0;
 }
 
 .topbar div > ul a, .nav a {
     padding: inherit;
-    line-height: normal;
+    line-height: 25px;
 }
 
 .topbar input:focus, .topbar input.focused {
