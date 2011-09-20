@@ -5,6 +5,15 @@
     width: 7em;
 }
 
+.topbar-inner, .topbar .fill {
+    padding: 5px 0;
+}
+
+.topbar div > ul a, .nav a {
+    padding: inherit;
+    line-height: normal;
+}
+
 .topbar input:focus, .topbar input.focused {
     border: 1px solid #111;
     -webkit-border-radius: 4px;
