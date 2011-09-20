@@ -9,12 +9,14 @@
        (with-params (:post name password)
          (if-let (user (validate-user name password))
            (progn (start-session user)
-                  (hunchentoot:redirect (hunchentoot:referer)))
+                  (hunchentoot:redirect (hunchentoot:referer)
+                                        :code hunchentoot:+http-see-other+))
            "Invalid credentials")))
       (:get (hunchentoot:handle-static-file page)))))
 
 (defroute logout "/logout"
   (if (hunchentoot:session hunchentoot:*request*)
       (progn (end-session)
-             (hunchentoot:redirect (hunchentoot:referer)))
+             (hunchentoot:redirect (hunchentoot:referer)
+                                   :code hunchentoot:+http-see-other+))
       "You're not logged in!"))
