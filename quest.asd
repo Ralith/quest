@@ -9,6 +9,7 @@
              (:file "utils")
              (:file "routes")
              (:file "templates")
+             (:file "icons")
              (:file "security")
              (:file "users")
              (:file "media")
