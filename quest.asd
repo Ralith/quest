@@ -9,7 +9,6 @@
              (:file "utils")
              (:file "routes")
              (:file "templates")
-             (:file "icons")
              (:file "security")
              (:file "users")
              (:file "media")
@@ -21,7 +20,8 @@
              (:module "pages"
                       :serial t
                       :components
-                      ((:file "login")
+                      ((:file "icons")
+                       (:file "login")
                        (:file "register")
                        (:file "index")
                        (:file "quest")
