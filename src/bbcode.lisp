@@ -82,6 +82,6 @@
                      (mapc (curry #'bbcode->html stream) body)
                      (write-string "</a>" stream))
               (format stream "<a href=\"~A\" />" (escape-for-html (apply 'concatenate 'string body)))))
-         ((null tag)
+         (t
           (mapc (curry #'bbcode->html stream) body))))))
   (values))
