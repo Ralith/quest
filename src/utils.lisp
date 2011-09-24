@@ -16,6 +16,13 @@
                                     (:post `(hunchentoot:post-parameter ,(string-downcase (symbol-name name)))))))
      ,@body))
 
+(defun client-stream (&optional content-type)
+  (when content-type
+    (setf (hunchentoot:content-type*)
+          (format nil "~a;charset=UTF-8" content-type)))
+  (flexi-streams:make-flexi-stream (hunchentoot:send-headers)
+                                   :external-format :UTF8))
+
 ;;; SQL utils
 (defmacro defdao (name superclasses slots &body dao-options)
   (flet ((parsed-opts (keyword deftable-func-name)

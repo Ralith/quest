@@ -20,9 +20,7 @@
   ;; TODO: Don't hardcode ID of board
   (let* ((quest (find-child (get-dao 'board 1) (parse-integer id :radix 36)))
          (base-url (format nil "http://~A/quest/~A" (host) id)))
-    (setf (content-type*) "application/rss+xml")
-    (cxml-xmls:map-node
-     (cxml:make-octet-stream-sink (send-headers))
+    (xmls:write-xml
      `("rss"
        (("version" "2.0"))
        ("channel"
@@ -69,4 +67,4 @@
                                                    (format nil "The ~:R update of the ~:R chapter of ~A"
                                                            update-number chapter-number (title quest))))
                             ("pubDate" () ,(escape-for-html (to-rfc1123-timestring (created update))))))))))
-     :include-namespace-uri nil)))
+     (client-stream "application/rss+xml"))))
