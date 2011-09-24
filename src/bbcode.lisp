@@ -61,3 +61,27 @@
                                             when d
                                               collect d))
                               'string)))))))
+
+(defun bbcode->html (stream bbcode)
+  (etypecase bbcode
+    (string (write-string (escape-for-html bbcode) stream))
+    (list
+     (destructuring-bind (tag param &rest body) bbcode
+       (cond
+         ((string= tag "b")
+          (write-string "<b>" stream)
+          (mapc (curry #'bbcode->html stream) body)
+          (write-string "</b>" stream))
+         ((string= tag "i")
+          (write-string "<i>" stream)
+          (mapc (curry #'bbcode->html stream) body)
+          (write-string "</i>" stream))
+         ((string= tag "url")
+          (if param
+              (progn (format stream "<a href=\"~A\">" (escape-for-html param))
+                     (mapc (curry #'bbcode->html stream) body)
+                     (write-string "</a>" stream))
+              (format stream "<a href=\"~A\" />" (escape-for-html (apply 'concatenate 'string body)))))
+         ((null tag)
+          (mapc (curry #'bbcode->html stream) body))))))
+  (values))
