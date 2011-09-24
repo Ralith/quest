@@ -2,14 +2,14 @@
 
 (define-parser *bbcode-parser*
   (:start-symbol expression)
-  (:terminals (bare-word open-bracket close-bracket slash equals))
+  (:terminals (bare-word open-bracket close-bracket slash equals quote escape))
   
   (expression
    (open-tag expression close-tag #'tag-expression)
-   string)                              ; implicit action #'identity
+   string)
 
   (open-tag
-   (open-bracket bare-word equals string close-bracket (lambda (a b c d e)
+   (open-bracket bare-word equals quotable-string close-bracket (lambda (a b c d e)
                                                          (declare (ignore a c e))
                                                          (list b d)))
    (open-bracket bare-word close-bracket (lambda (a b c)
@@ -21,6 +21,18 @@
                                                  (declare (ignore a b d))
                                                  c)))
 
+  (quotable-string
+   string
+   (quote quoted-string quote (lambda (a b c) (declare (ignore a c)) b)))
+
+  (quoted-string
+   (quoted-string quoted-piece (curry 'concatenate 'string))
+   quoted-piece)
+
+  (quoted-piece
+   string-piece
+   quotable-special)
+
   (string
    (string string-piece (curry 'concatenate 'string))
    string-piece)
@@ -28,7 +40,17 @@
   (string-piece
    bare-word
    equals
-   slash))
+   slash
+   literal-special)
+
+  (literal-special
+   (escape special (lambda (a b) (declare (ignore a)) b)))
+
+  (special
+   quotable-special quote)
+
+  (quotable-special
+   open-bracket close-bracket))
 
 (define-condition bbcode-error (yacc-runtime-error) ())
 
@@ -46,7 +68,9 @@
                (list name param expr))
       (use-tag (new-name)
         :report (lambda (s) (format s "Provide a tag name to use in place of the mismatched tags."))
-        :interactive (lambda () (list (read-line)))
+        :interactive (lambda () (list
+                                 #+swank (swank::read-from-minibuffer-in-emacs "Tag name: ")
+                                 #-(or swank) (read-line)))
         (list new-name param expr)))))
 
 (defun bbcode-lexer (&optional (stream *standard-input*))
@@ -57,12 +81,12 @@
            (#\] (values 'close-bracket "]"))
            (#\/ (values 'slash "/"))
            (#\= (values 'equals "="))
+           (#\" (values 'quote "\""))
+           (#\\ (values 'escape "\\"))
            (t (values 'bare-word
                       (coerce (cons c (loop for d = (read-char stream nil nil)
                                             until (or (null d)
-                                                      (and (or (eql d #\[)
-                                                               (eql d #\])
-                                                               (eql d #\=))
+                                                      (and (or (find d "[]/=\"\\"))
                                                            (progn (unread-char d stream) t)))
                                             when d
                                               collect d))
