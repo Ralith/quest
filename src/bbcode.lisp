@@ -1,17 +1,22 @@
 (in-package :quest)
 
 (define-parser *bbcode-parser*
-  (:start-symbol expression)
+  (:start-symbol bbcode)
   (:terminals (bare-word open-bracket close-bracket slash equals quote escape))
-  
+
+  (bbcode
+   (bbcode expression)
+   expression)
+
   (expression
-   (open-tag expression close-tag #'tag-expression)
-   string)
+   (open-tag bbcode close-tag #'tag-expression)
+   (open-tag close-tag (lambda (a b) (tag-expression a nil b)))
+   unquotable-piece)
 
   (open-tag
    (open-bracket bare-word equals quotable-string close-bracket (lambda (a b c d e)
-                                                         (declare (ignore a c e))
-                                                         (list b d)))
+                                                                  (declare (ignore a c e))
+                                                                  (list b d)))
    (open-bracket bare-word close-bracket (lambda (a b c)
                                            (declare (ignore a c))
                                            (list b nil))))
@@ -33,6 +38,10 @@
    string-piece
    quotable-special)
 
+  (unquotable-piece
+   string-piece
+   quote)
+
   (string
    (string string-piece (curry 'concatenate 'string))
    string-piece)
@@ -47,7 +56,7 @@
    (escape special (lambda (a b) (declare (ignore a)) b)))
 
   (special
-   quotable-special quote)
+   quotable-special escape quote)
 
   (quotable-special
    open-bracket close-bracket))
@@ -60,18 +69,27 @@
   (:report (lambda (e s)
              (format s "Mismatched tags: [~A] and [/~A]" (left e) (right e)))))
 
+(defclass tag ()
+  ((name :initarg :name :initform (error "Tags must be named!") :reader name)
+   (param :initarg :param :reader param)
+   (body :initarg :body :reader body)))
+
+(defmethod print-object ((o tag) s)
+  (print-unreadable-object (o s :type t :identity t)
+    (format s "~A=~A (~A)" (name o) (param o) (body o))))
+
 (defun tag-expression (open expr close)
   (destructuring-bind (name param) open
     (restart-case
         (progn (unless (string= name close)
                  (error 'tag-mismatch :left name :right close))
-               (list name param expr))
+               (make-instance 'tag :name name :param param :body expr))
       (use-tag (new-name)
         :report (lambda (s) (format s "Provide a tag name to use in place of the mismatched tags."))
         :interactive (lambda () (list
                                  #+swank (swank::read-from-minibuffer-in-emacs "Tag name: ")
                                  #-(or swank) (read-line)))
-        (list new-name param expr)))))
+        (make-instance 'tag :name new-name :param param :body expr)))))
 
 (defun bbcode-lexer (&optional (stream *standard-input*))
   (let ((c (read-char stream nil nil)))
