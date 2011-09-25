@@ -39,7 +39,8 @@
    quoted-piece)
 
   (quoted-piece
-   string-piece
+   simple-string-piece
+   quoted-literal-special
    quotable-special)
 
   (unquotable-piece
@@ -51,10 +52,17 @@
    string-piece)
 
   (string-piece
+   simple-string-piece
+   literal-special)
+
+  (simple-string-piece
    bare-word
    equals
-   slash
-   literal-special)
+   slash)
+
+  (quoted-literal-special
+   (escape escape (lambda (a b) (declare (ignore a)) b))
+   (escape quote (lambda (a b) (declare (ignore a)) b)))
 
   (literal-special
    (escape special (lambda (a b) (declare (ignore a)) b)))
