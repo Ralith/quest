@@ -7,6 +7,7 @@
             :components
             ((:file "package")
              (:file "utils")
+             (:file "dice")
              (:file "bbcode")
              (:file "bbcode-grammar")
              (:file "routes")
