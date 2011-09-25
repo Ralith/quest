@@ -22,12 +22,13 @@
 
 (defroute art-index "/art/"
   (with-output-to-string (s)
-    (fill-and-print-template (find-template "art-index")
-                             (list :small "128x128"
-                                   :large "512x512"
-                                   :seeds
-                                   (loop repeat 10 collect (list :seed (write-to-string (make-seed) :base 36))))
-                             :stream s)))
+    (template:fill-and-print-template
+     #p"art-index.tmpl"
+     (list :small "128x128"
+           :large "512x512"
+           :seeds
+           (loop repeat 10 collect (list :seed (write-to-string (make-seed) :base 36))))
+     :stream s)))
 
 
 

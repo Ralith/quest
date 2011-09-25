@@ -2,7 +2,7 @@
 
 (declaim (optimize (debug 3)))
 
-(let ((page (merge-pathnames "login.html" *template-dir*)))
+(let ((page (merge-pathnames "../templates/login.html" *static-dir*)))
   (defroute login "/login"
     (ecase (request-method*)
       (:post

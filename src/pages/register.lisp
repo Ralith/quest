@@ -2,7 +2,7 @@
 
 (declaim (optimize (debug 3)))
 
-(let ((page (merge-pathnames "register.html" *template-dir*)))
+(let ((page (merge-pathnames "../templates/register.html" *static-dir*)))
   (defroute register "/register"
     (ecase (request-method*)
       (:post

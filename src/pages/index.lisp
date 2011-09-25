@@ -22,7 +22,7 @@
                                             :body ,(body update)))))))
     (with-output-to-string (s)
       (template:fill-and-print-template
-       (find-template "index")
+       #p"index.tmpl"
        (list :user-name (let ((session (hunchentoot:session *request*)))
                           (and session (name (get-dao 'user (user-id session)))))
              :quests values

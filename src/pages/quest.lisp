@@ -2,10 +2,10 @@
 
 (defroute quest "/quest/:id"
   ;; TODO: Don't hardcode ID of board
-  (let* ((quest (find-child (get-dao 'board 1) (parse-integer id :radix 36))))
+  (let ((quest (find-child (get-dao 'board 1) (parse-integer id :radix 36))))
     (with-output-to-string (s)
       (template:fill-and-print-template
-       (find-template "quest")
+       #p"quest.tmpl"
        (list :quest-title (title quest)
              :quest-summary (body quest)
              :author (name (get-dao 'user (user-id quest)))

@@ -17,3 +17,5 @@
 (defun start ()
   (hunchentoot:start (make-instance 'quest-acceptor :port 8080))
   (connect-toplevel "quest" "ralith" nil "localhost"))
+
+(setf hunchentoot:*hunchentoot-default-external-format* (flexi-streams:make-external-format :utf8))
