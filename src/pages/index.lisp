@@ -16,7 +16,7 @@
                         :chapter-title ,(escape-for-html (title chapter))
                         :posts
                         ,(loop for update in (updates chapter)
-                               collecting `(:post-title ,(escape-for-html (title update))
+                               collecting `(:post-title ,(escape-for-html (subst "" :null (title update)))
                                             :author ,(escape-for-html (name (get-dao 'user (user-id update))))
                                             :date ,(created update)
                                             :body ,(escape-for-html (body update))))))))
