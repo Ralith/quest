@@ -62,26 +62,53 @@
                                               collect d))
                               'string)))))))
 
+(defvar *bbcode* (make-hash-table :test 'equal))
+
+(defmacro defbbcode (name (stream body &optional param) &body actions)
+  (with-gensyms (inner-tree)
+    `(setf (gethash ,(string-downcase (symbol-name name)) *bbcode*)
+           (list ,(and param t)
+                 (lambda (,stream ,inner-tree ,@(when param (list param)))
+                   (flet ((,body (stream)
+                            (mapc (curry #'bbcode->html stream)
+                                  ,inner-tree)))
+                     ,@actions))))))
+
+(defmacro defbbcode-trivial (name &optional left right)
+  (setf left (or left (format nil "<~A>" (string-downcase (symbol-name name))))
+        right (or right (format nil "</~A>" (string-downcase (symbol-name name)))))
+  (with-gensyms (stream body)
+    `(defbbcode ,name (,stream ,body)
+       (write-string ,left ,stream)
+       (,body ,stream)
+       (write-string ,right ,stream))))
+
+(defbbcode-trivial b)
+(defbbcode-trivial i)
+(defbbcode-trivial s)
+(defbbcode-trivial u "<span style=\"text-decoration: underline\">" "</span>")
+(defbbcode-trivial sup)
+(defbbcode-trivial sub)
+(defbbcode url (s body url)
+  (if url
+      (progn (format s "<a href=\"~A\">" (escape-for-html url))
+             (body s)
+             (format s "</a>"))
+      (let ((body (escape-for-html (with-output-to-string (o)
+                                     (body o)))))
+        (format s "<a href=\"~A\">~A</a>" body body))))
+
 (defun bbcode->html (stream bbcode)
+  (format t "Rendering ~A~%" bbcode)
   (etypecase bbcode
     (string (write-string (escape-for-html bbcode) stream))
     (list
      (destructuring-bind (tag param &rest body) bbcode
-       (cond
-         ((string= tag "b")
-          (write-string "<b>" stream)
-          (mapc (curry #'bbcode->html stream) body)
-          (write-string "</b>" stream))
-         ((string= tag "i")
-          (write-string "<i>" stream)
-          (mapc (curry #'bbcode->html stream) body)
-          (write-string "</i>" stream))
-         ((string= tag "url")
-          (if param
-              (progn (format stream "<a href=\"~A\">" (escape-for-html param))
-                     (mapc (curry #'bbcode->html stream) body)
-                     (write-string "</a>" stream))
-              (format stream "<a href=\"~A\" />" (escape-for-html (apply 'concatenate 'string body)))))
-         (t
-          (mapc (curry #'bbcode->html stream) body))))))
+       (format t "Tag: ~A Param: ~A Body: ~A Handler: ~A~%" tag param body (gethash (find-symbol (string-upcase tag) (find-package :quest)) *bbcode*))
+       (if-let (handler (gethash tag *bbcode*))
+         (destructuring-bind (param? renderer) handler
+           (if param?
+               (funcall renderer stream body param)
+               (funcall renderer stream body)))
+         (mapc (curry #'bbcode->html stream) body)))))
   (values))
