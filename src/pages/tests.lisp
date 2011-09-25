@@ -8,7 +8,7 @@
        (template:fill-and-print-template #p"bbtest.tmpl"
                                          (let ((tree (with-input-from-string (in bbcode)
                                                        (parse-bbcode in))))
-                                           (list :parsed tree
+                                           (list :parsed (escape-for-html (write-to-string tree))
                                                  :rendered (with-output-to-string (out)
                                                              (bbcode->html out tree))))
                                          :stream (client-stream "text/html"))))
