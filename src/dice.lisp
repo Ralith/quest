@@ -3,10 +3,14 @@
 (defun char-digit (c)
   (- (char-code c) (char-code #\0)))
 
+(defun whitespace? (c)
+  (member c '(#\Space #\Tab #\Return #\Newline)))
+
 (defun dice-lexer (&optional (stream *standard-input*)
                      &aux (c (read-char stream nil nil)))
   (cond
     ((null c) nil)
+    ((whitespace? c) (dice-lexer stream))
     ((digit-char-p c)
      (loop for d = (read-char stream nil nil)
            while (and d (digit-char-p d))
