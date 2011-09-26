@@ -271,10 +271,11 @@
                                   ,(operator-blue op)))))))))
 
 (defun code->func (code)
-  (compile nil `(lambda (x y)
-                  (declare (optimize (speed 3))
-                           (type (single-float -1.0 1.0) x y))
-                  ,code)))
+  (ignore-errors
+   (compile nil `(lambda (x y)
+                   (declare (optimize (speed 3))
+                            (type (single-float -1.0 1.0) x y))
+                   ,code))))
 
 (defun generate (&key (min-depth 4) (max-depth 5) (seed (get-internal-real-time)))
   (cffi:with-foreign-object (*randbuf* :char 24)
@@ -286,9 +287,25 @@
   (truncate (* 128 (+ 1 (min (/ 255.0 256.0) (max -1.0 x))))))
 (declaim (inline coord->color))
 
+(defun hsv->rgb (h s v)
+  (declare (type (single-float -1.0 1.0) h s v))
+  (if (= s 0.0)
+      (values v v v)
+      (multiple-value-bind (i f) (truncate (* h 6.0))
+        (let* ((p (* v (- 1.0 s)))
+               (q (* v (- 1.0 (* s f))))
+               (tv (* v (- 1.0 (* s (- 1.0 f))))))
+          (case i
+            (1 (values q v p))
+            (2 (values p v tv))
+            (3 (values p q v))
+            (4 (values tv p v))
+            (5 (values v p q))
+            (t (values v tv p)))))))
 
 (defun do-render (function pixel-writer width height &aux (ratio (float (/ width height) 0.0)))
   (declare (type fixnum width height)
+           (type function function pixel-writer)
            (optimize (speed 3)))
   (let ((xmin -1.0) (xmax 1.0) (ymin -1.0) (ymax 1.0) step)
     (if (> width height)
@@ -304,7 +321,7 @@
           do (loop for x from xmin to xmax by step
                    for i below width
                    do (multiple-value-bind (r g b)
-                          (funcall function x y)
+                          (multiple-value-call #'hsv->rgb (funcall function x y))
                         (funcall pixel-writer i j
                                  (coord->color r) (coord->color g) (coord->color b)))))))
 
