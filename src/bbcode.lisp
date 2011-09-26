@@ -94,8 +94,8 @@
       (progn (format s "<a href=\"~A\">" (escape-for-html url))
              (body s)
              (format s "</a>"))
-      (let ((body (escape-for-html (with-output-to-string (o)
-                                     (body o)))))
+      (let ((body (with-output-to-string (o)
+                    (body o))))
         (format s "<a href=\"~A\">~A</a>" body body))))
 
 (defun bbcode->html (stream bbcode)
