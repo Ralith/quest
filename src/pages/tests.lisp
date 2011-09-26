@@ -13,7 +13,7 @@
                           :parsed (escape-for-html (write-to-string tree))
                           :rendered (with-output-to-string (out)
                                       (bbcode->html out tree))))
-                (bbcode-error (e) (list :error (princ-to-string e)
+                (bbcode-error (e) (list :error (escape-for-html (princ-to-string e))
                                         :input (escape-for-html bbcode)
                                         :parsed nil
                                         :rendered nil)))))
