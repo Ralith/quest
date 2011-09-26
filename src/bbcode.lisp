@@ -99,12 +99,10 @@
         (format s "<a href=\"~A\">~A</a>" body body))))
 
 (defun bbcode->html (stream bbcode)
-  (format t "Rendering ~A~%" bbcode)
   (etypecase bbcode
     (string (write-string (escape-for-html bbcode) stream))
     (list
      (destructuring-bind (tag param &rest body) bbcode
-       (format t "Tag: ~A Param: ~A Body: ~A Handler: ~A~%" tag param body (gethash (find-symbol (string-upcase tag) (find-package :quest)) *bbcode*))
        (if-let (handler (gethash tag *bbcode*))
          (destructuring-bind (param? renderer) handler
            (if param?
