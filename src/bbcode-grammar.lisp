@@ -73,5 +73,23 @@
   (quotable-special
    open-bracket close-bracket))
 
+(defun terminal-description (terminal)
+  (case terminal
+    (bare-word "plain text")
+    (open-bracket "[")
+    (close-bracket "]")
+    (slash "/")
+    (equals "=")
+    (quote "\"")
+    (escape "\\")
+    (t "end of input")))
+
+(define-condition bbcode-syntax-error (bbcode-error)
+  ((got :initarg :got :reader got)
+   (expected :initarg :expected :reader expected))
+  (:report (lambda (e s)
+             (format s "Found ~A when we expected~:[~; one of:~] ~{~#[~;~a~;~a or ~a~:;~@{~a~#[~;, or ~:;, ~]~}~]~}" (or (and (got e) (format nil "\"~A\"" (got e))) "end of input") (> (length (expected e)) 1) (mapcar 'terminal-description (expected e))))))
+
 (defun parse-bbcode (stream)
-  (parse-with-lexer (curry #'bbcode-lexer stream) *bbcode-parser*))
+  (handler-case (parse-with-lexer (curry #'bbcode-lexer stream) *bbcode-parser*)
+    (yacc-parse-error (e) (error 'bbcode-syntax-error :expected (yacc-parse-error-expected-terminals e) :got (yacc-parse-error-value e)))))

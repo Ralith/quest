@@ -10,6 +10,9 @@
       <textarea rows="10" cols="30" name="bbcode"><!-- TMPL_VAR input --></textarea>
       <input type="submit" value="Parse">
     </form>
+    <!-- TMPL_IF error -->
+    <h4>Invalid bbcode:</h4> <!-- TMPL_VAR error -->
+    <!-- /TMPL_IF -->
     <!-- TMPL_IF parsed -->
     <!-- TMPL_VAR rendered -->
     <br />
