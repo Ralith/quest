@@ -89,6 +89,17 @@
 (defbbcode-trivial u "<span style=\"text-decoration: underline\">" "</span>")
 (defbbcode-trivial sup)
 (defbbcode-trivial sub)
+(defbbcode-trivial code "<pre>" "</pre>")
+(defbbcode-trivial spoiler "<span class=\"spoiler\">" "</span>")
+(defbbcode-trivial pre)
+(defbbcode-trivial strong)
+(defbbcode-trivial em)
+(defbbcode color (s body color)
+  (format s "<span style=\"color: ~A\">" (if color
+                                             (escape-for-html color)
+                                             ""))
+  (body s)
+  (format s "</span>"))
 (defbbcode url (s body url)
   (if url
       (progn (format s "<a href=\"~A\">" (escape-for-html url))
@@ -97,6 +108,15 @@
       (let ((body (with-output-to-string (o)
                     (body o))))
         (format s "<a href=\"~A\">~A</a>" body body))))
+(defbbcode img (s body url)
+  ;; TODO: Thumbnailing
+  (if url
+      (progn (format s "<img src=\"~A\" title=\"" (escape-for-html url))
+             (body s)
+             (format s "\">"))
+      (progn (write-string "<img src=\"" s)
+             (body s)
+             (write-string "\">" s))))
 
 (defun bbcode->html (stream bbcode)
   (etypecase bbcode
